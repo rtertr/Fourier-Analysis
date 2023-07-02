@@ -1181,47 +1181,10 @@ begin
 end
 
 
--- # We now prove that the fourier transform is a schwartz_map. Also a long proof. See line 1995
--- # We also formalize proposition_1_2_v during this
-
-lemma deriv_cexp' {h : ℝ}: 
-deriv (λ (y : ℝ), cexp (-(2 * ↑real.pi * ↑h * ↑y * I)))  = deriv (λ (y : ℝ), cexp ((↑((-2) * real.pi * h) * I)* y)) :=
-begin 
-  ext1 x,congr,ext1 y,repeat {rw ← neg_mul,}, rw [mul_comm _ I, mul_comm _ I], repeat {rw ← mul_assoc,},repeat {rw mul_assoc,},
-  rw ← mul_assoc _ (h : ℂ) _, norm_cast, repeat {rw ← mul_assoc,},
-end
+-- # We now prove proposition_1_2_v 
 
 
-lemma integral_deriv_rw (f : schwartz_map ℝ ℂ) {x : ℝ}: 
-(λ (n : ℝ), ∫ (v : ℝ) in -n..n, deriv (λ (w : ℝ), cexp (-(2 * ↑real.pi * ↑v * ↑w * I)) * f.to_fun v) x) = λ (n : ℝ), (∫ (v : ℝ) in -n..n,  (λ (w : ℝ), -(2 * ↑real.pi * ↑v * I) * cexp (-(2 * ↑real.pi * ↑v * ↑w * I)) * f.to_fun v) x) :=
-begin
-  ext1 n, congr, ext1 x, rw [deriv_mul_const,deriv_cexp',deriv_exp_neg_complex_mul], dsimp, rw neg_mul, congr,
-  repeat {rw ← neg_mul,},congr,norm_cast, repeat {rw ← mul_assoc,}, repeat {rw ← neg_mul,},
-  repeat {rw ← neg_mul,}, rw mul_comm _ I, rw mul_comm _ I, rw mul_assoc I _ _, 
-  congr,norm_cast, 
-  refine differentiable.differentiable_at _,
-  refine differentiable.cexp _,
-  refine differentiable.neg _,
-  refine differentiable.mul_const _ _,
-  refine differentiable.const_mul _ _,
-  refine differentiable.comp _ differentiable_id,
-  refine of_real_clm.differentiable,
-end
-
-lemma functions_equal_1 {f : schwartz_map ℝ ℂ} {x : ℝ}: 
-(λ (v : ℝ), (λ (v : ℝ), ↑v * I * cexp ((-2) * ↑real.pi * ↑v * ↑x * I) * f.to_fun v) v) = λ (v : ℝ), I * (λ (v : ℝ), cexp ((-2) * ↑real.pi * ↑v * ↑x * I) * (↑v * f.to_fun v)) v :=
-begin
-  ext1 v,  dsimp,
-  rw [mul_comm _ I,mul_assoc I _ _, mul_assoc I _ _, mul_comm (v : ℂ) _, mul_assoc _ (v : ℂ) _],
-end
-
-lemma functions_equal_2 {f : schwartz_map ℝ ℂ} {x : ℝ}: 
-(λ (v : ℝ), (-2) * (real.pi: ℂ) * ↑v * I * cexp ((-2) * (real.pi: ℂ) * ↑v * ↑x * I) * (f.to_fun v)) =(λ (v : ℝ), ((-2) * (real.pi: ℂ)) * (λ (v : ℝ), ↑v * I * cexp ((-2) * (real.pi: ℂ) * ↑v * ↑x * I) * f.to_fun v) v) :=
-begin
-  ext1 v, dsimp, repeat{rw ← mul_assoc,},
-end
-
-lemma rewrite5 {a : ℂ}: 
+lemma cexp_mul_assoc {a : ℂ}: 
 (λ (x : ℝ),cexp (-(2 * ↑real.pi * ↑a * ↑x * I))) = (λ (x : ℝ),cexp (-(2 * ↑real.pi * ↑a  * I) * ↑x)) :=
 begin
   ext1 x,
@@ -1229,6 +1192,7 @@ begin
   repeat {rw ← neg_mul,},
   rw [mul_assoc _ _ I, mul_comm _ I,← mul_assoc _ I _],
 end
+
 
 lemma ae_strongly_measurable_deriv_cexp_mul_schwartz {x : ℝ} {f : schwartz_map ℝ ℂ}:
 measure_theory.ae_strongly_measurable (λ (a : ℝ), deriv (λ (w : ℝ), cexp (-(2 * ↑real.pi * ↑a * ↑w * I)) * f.to_fun a) x) measure_theory.measure_space.volume:=
@@ -1238,7 +1202,7 @@ begin
   refine continuous.mul _ (schwartz_map.continuous f),
   have h₁:(λ (a : ℝ), deriv (λ (x : ℝ), cexp (-(2 * ↑real.pi * ↑a * ↑x * I))) x)= (λ (a : ℝ), (λ (x : ℝ), -(2 * ↑real.pi * ↑a * I) * cexp (-(2 * ↑real.pi * ↑a * I) * ↑x)) x), 
     {ext1 a,
-    have : (λ (x : ℝ),cexp (-(2 * ↑real.pi * ↑a * ↑x * I))) = (λ (x : ℝ),cexp (-(2 * ↑real.pi * ↑a  * I) * ↑x)), by refine rewrite5,
+    have : (λ (x : ℝ),cexp (-(2 * ↑real.pi * ↑a * ↑x * I))) = (λ (x : ℝ),cexp (-(2 * ↑real.pi * ↑a  * I) * ↑x)), by refine cexp_mul_assoc,
     rw [this, deriv_exp_neg_complex_mul _ _],},
   simp_rw h₁,
   refine continuous.mul (continuous.neg _) _,
@@ -1250,6 +1214,7 @@ begin
   repeat {rw ← neg_mul,},
   rw [mul_assoc _ I _, mul_comm I _,← mul_assoc _ _ I],
 end
+
 
 lemma ae_strongly_measurable_cexp_mul_schwartz {x : ℝ} {f : schwartz_map ℝ ℂ}: 
 ∀ᶠ (x : ℝ) in nhds x, measure_theory.ae_strongly_measurable ((λw : ℝ,(λv : ℝ,cexp (-(2 * ↑real.pi * ↑v * ↑w * I)) * f.to_fun v)) x) measure_theory.measure_space.volume:=
@@ -1264,49 +1229,127 @@ begin
 end
 
 
-lemma metric_ball_has_deriv_at  {x h : ℝ} (f : schwartz_map ℝ ℂ) : 
-∀ᵐ (a : ℝ), ∀ (x_1 : ℝ), x_1 ∈ metric.ball x h → has_deriv_at (λ (x : ℝ), (λ (w v : ℝ), cexp (-(2 * ↑real.pi * ↑v * ↑w * I)) * f.to_fun v) x a) (deriv (λ (w : ℝ), cexp (-(2 * ↑real.pi * ↑a * ↑w * I)) * f.to_fun a) x_1) x_1:=
+lemma moderate_decrease_pow_bounded_const_div_one_add_norm_mul_one_add_sq (f : schwartz_map ℝ ℂ) :
+∀ k : ℕ, ∃ C : ℝ, ∀ x : ℝ, ‖x‖^k * ‖f.to_fun x‖ ≤  (C)/(1+ ‖x‖*(1+ ‖x‖^2)) :=
 begin
-  refine eventually_of_forall _, 
+  intro k,
+  have h₁:= f.decay',  have h₂:= f.decay',  have h₃:= f.decay',
+  specialize h₁ (k),  specialize h₂ (k+1), specialize h₃ (k+3),
+  specialize h₁ 0,  specialize h₂ 0, specialize h₃ 0,
+  obtain ⟨C₁,h₁⟩:=h₁,  obtain ⟨C₂,h₂⟩:=h₂,  obtain ⟨C₃,h₃⟩:=h₃,
+  use (C₁ + C₂ + C₃),
   intro x,
-  intro y,
-  intro hy,
-  rw has_deriv_at_deriv_iff,
-  dsimp,
-  refine differentiable_at.mul _ (differentiable_at_const _),
-  refine differentiable_at.cexp _,
-  refine differentiable_at.neg _,
-  refine differentiable_at.mul_const _ _,
-  refine differentiable_at.const_mul _ _,
-  refine differentiable_at.comp _ _ differentiable_at_id,
-  refine of_real_clm.differentiable_at,
+  rw [le_div_iff _, mul_add, mul_add, mul_add, mul_one, mul_one],
+  nth_rewrite 2 ← pow_one (‖x‖),
+  nth_rewrite 4 ← pow_one (‖x‖),
+  rw [← pow_add _ _, ← add_assoc],
+  nth_rewrite 1 mul_comm _ (‖f.to_fun x‖),
+  nth_rewrite 1 mul_comm _ (‖f.to_fun x‖),
+  refine add_le_add (add_le_add _ _) _,
+  {specialize h₁ x,  
+  simp only [norm_iterated_fderiv_zero] at h₁, 
+  refine h₁,},
+  {rw [mul_assoc, ← pow_add _ _, mul_comm],
+  specialize h₂ x, 
+  simp only [norm_iterated_fderiv_zero] at h₂,
+  refine h₂,},
+  {have h₄: 1 + 2 = 3, ring_nf,
+  rw [h₄, mul_assoc, ← pow_add _ _, mul_comm],
+  specialize h₃ x,
+  simp only [norm_iterated_fderiv_zero] at h₃,
+  refine h₃,},
+  {positivity,},
 end
 
 
-lemma cexp_mul_schwartz_moderate_decrease (f :schwartz_map ℝ ℂ) : 
-∃ (C : ℝ), ∀ x : ℝ, ∀ᵐ (v : ℝ), ‖(cexp (↑((-2) * real.pi * v * x) * I) • (f.to_fun v))‖ ≤ (λ x : ℝ, (‖C‖ /(1 + ‖x‖^2))) v :=
+lemma deriv_cexp_bound_explicit (h : ℝ) : 
+ ∀ (x : ℝ), ‖deriv (λ (y : ℝ), cexp (↑((-2) * real.pi * y * h) * I)) x‖ ≤ 2 * |real.pi|* ‖h‖:=
 begin
-  have h₁:=moderate_decrease_pow f,
+  intro x,
+  simp only [neg_mul, of_real_neg, of_real_mul, of_real_bit0, of_real_one],
+  rw [norm_deriv_rw, deriv_exp_neg_complex_mul (↑((-2) * real.pi * h) * I) x],
+  simp only [neg_mul, of_real_neg, of_real_mul, of_real_bit0, of_real_one, complex.norm_eq_abs, absolute_value.map_neg,
+  absolute_value.map_mul, complex.abs_two, abs_of_real, abs_I, mul_one],
+  have h₂: ‖cexp (-(2 * ↑real.pi * ↑h * I * ↑x))‖ = ‖cexp ((↑(-2 * real.pi *h * x))* I)‖,
+  {congr,repeat {rw ← neg_mul,}, rw [mul_comm _ I, mul_comm _ I], repeat {rw mul_assoc,}, congr, norm_cast,},
+  rw [← complex.norm_eq_abs,h₂, complex.norm_exp_of_real_mul_I _, mul_one, real.norm_eq_abs],
+end
+
+
+lemma bound_one_div_one_add_sq {x : ℝ} : ‖x‖/(1+ ‖x‖*(1+ ‖x‖^2)) ≤ 1/((1+ ‖x‖^2)) :=
+begin
+  cases le_or_lt (‖x‖) 1,
+  refine div_le_div zero_le_one h _ _,
+  positivity,
+  refine add_le_add rfl.ge _,
+  rw sq,
+  refine mul_le_mul rfl.ge _ (norm_nonneg _) (norm_nonneg _),
+  refine le_trans h _,
+  simp only [le_add_iff_nonneg_right],
+  positivity,
+  have h₁: 1 / (1 + ‖x‖ ^ 2) = ‖x‖ / (‖x‖ *(1 + ‖x‖ ^ 2)), 
+  rw [div_mul_eq_div_mul_one_div, div_self _, one_mul],
+  positivity,
+  rw h₁,
+  refine div_le_div (norm_nonneg _) rfl.ge _ _,
+  positivity,
+  rw [mul_add, mul_one],
+  simp only [le_add_iff_nonneg_left, zero_le_one],
+end
+
+
+lemma bounded_by_moderate_decrease {y C₁: ℝ} (h : 0 ≤ C₁) : 
+(2 * (|real.pi|) * ‖y‖) * ((C₁)/(1+ ‖y‖*(1+ ‖y‖^2))) ≤ C₁ * 2 * (|real.pi| / (1 + ‖y‖ ^ 2)) :=
+begin
+  rw div_eq_mul_one_div,
+  rw ← mul_assoc,
+  rw mul_assoc _ (‖y‖) _,
+  rw mul_comm (‖y‖) _,
+  repeat {rw ← mul_assoc,},
+  rw mul_assoc,
+  rw ← div_eq_mul_one_div,
+  nth_rewrite 1 div_eq_mul_one_div,
+  repeat {rw ← mul_assoc,},
+  refine mul_le_mul _ _ _ _,
+  rw mul_comm _ C₁,
+  rw mul_assoc,
+  exact bound_one_div_one_add_sq,
+  positivity,
+  positivity,
+end
+
+
+lemma deriv_cexp_mul_schwartz_moderate_decrease (f :schwartz_map ℝ ℂ) : 
+∀ x : ℝ, ∃ (C : ℝ), ∀ᵐ (a : ℝ), ∀ (x_1 : ℝ), x_1 ∈ metric.ball x (‖C‖+1) → ‖deriv (λ (w : ℝ), cexp (-(2 * ↑real.pi * ↑a * ↑w * I)) * f.to_fun a) x_1‖ ≤ (C) / (1 + ‖a‖ ^ 2) :=
+begin
+   have h₁:=moderate_decrease_pow_bounded_const_div_one_add_norm_mul_one_add_sq f,
   specialize h₁ 0, 
-  obtain ⟨C,h₁⟩:=h₁, 
-  use C, 
-  intro h, 
+  intro x, 
+  obtain ⟨C₁,h₁⟩:=h₁,
+  use (C₁*2 * |real.pi|), 
   refine eventually_of_forall _,  
-  intro y, 
+  intro y,  intros w hw,
+  have h₂:= deriv_cexp_bound_explicit y,
   specialize h₁ y, 
+  specialize h₂ w, 
   rw [pow_zero,one_mul] at h₁,
-  simp_rw [norm_smul _ _, complex.norm_exp_of_real_mul_I _, one_mul],  
-  refine le_trans h₁ _, 
-  refine div_le_div (norm_nonneg _) (real.le_norm_self _) _ rfl.ge, 
-  positivity, 
+  simp only [deriv_mul_const_field', norm_mul, pow_bit0_abs],
+  rw mul_div_assoc,
+  refine le_trans _ (bounded_by_moderate_decrease _),
+  convert mul_le_mul h₂ h₁ _ _,
+  ext1 b,
+  repeat {rw ←neg_mul,},
+  rw [mul_comm _ I, mul_comm _ I],
+  congr,
+  norm_cast,
+  rw [mul_assoc _ b _, mul_assoc _ _ b, mul_comm _ b],
+  positivity,
+  positivity,
+  rw le_div_iff _ at h₁,
+  refine le_trans _ h₁,
+  positivity,
+  positivity,
 end
-
-
-lemma rewrite3 {C : ℝ} {n : ℕ}:
-(λ (x : ℝ), ‖(-(2: ℂ)) ^ n‖ • ‖I ^ n‖ • ‖(real.pi: ℂ) ^ n‖ * (‖C‖ / (1 + ‖x‖ ^ 2)))  =(λ (x : ℝ), ((‖(-(2: ℂ)) ^ n‖ • ‖I ^ n‖ • ‖(real.pi: ℂ) ^ n‖ * ‖C‖) / (1 + ‖x‖ ^ 2))) :=
-begin
-  ext1 x, rw div_eq_mul_one_div, nth_rewrite_rhs 0 div_eq_mul_one_div, repeat {rw ← mul_assoc,},
-end 
 
 
 lemma integral_moderate_decrease_bounded {C : ℝ} (l:filter ℝ) :
@@ -1352,126 +1395,22 @@ begin
 end
 
 
-lemma deriv_cexp_bound_explicit (h : ℝ) : 
- ∀ (x : ℝ), ‖deriv (λ (y : ℝ), cexp (↑((-2) * real.pi * y * h) * I)) x‖ ≤ 2 * |real.pi|* ‖h‖:=
+lemma metric_ball_has_deriv_at  {x h : ℝ} (f : schwartz_map ℝ ℂ) : 
+∀ᵐ (a : ℝ), ∀ (x_1 : ℝ), x_1 ∈ metric.ball x h → has_deriv_at (λ (x : ℝ), (λ (w v : ℝ), cexp (-(2 * ↑real.pi * ↑v * ↑w * I)) * f.to_fun v) x a) (deriv (λ (w : ℝ), cexp (-(2 * ↑real.pi * ↑a * ↑w * I)) * f.to_fun a) x_1) x_1:=
 begin
+  refine eventually_of_forall _, 
   intro x,
-  simp only [neg_mul, of_real_neg, of_real_mul, of_real_bit0, of_real_one],
-  rw [norm_deriv_rw, deriv_exp_neg_complex_mul (↑((-2) * real.pi * h) * I) x],
-  simp only [neg_mul, of_real_neg, of_real_mul, of_real_bit0, of_real_one, complex.norm_eq_abs, absolute_value.map_neg,
-  absolute_value.map_mul, complex.abs_two, abs_of_real, abs_I, mul_one],
-  have h₂: ‖cexp (-(2 * ↑real.pi * ↑h * I * ↑x))‖ = ‖cexp ((↑(-2 * real.pi *h * x))* I)‖,
-  {congr,repeat {rw ← neg_mul,}, rw [mul_comm _ I, mul_comm _ I], repeat {rw mul_assoc,}, congr, norm_cast,},
-  rw [← complex.norm_eq_abs,h₂, complex.norm_exp_of_real_mul_I _, mul_one, real.norm_eq_abs],
-end
-
-
-lemma bound_one_div_one_add_sq {x : ℝ} : ‖x‖/(1+ ‖x‖*(1+ ‖x‖^2)) ≤ 1/((1+ ‖x‖^2)) :=
-begin
-  cases le_or_lt (‖x‖) 1,
-  refine div_le_div zero_le_one h _ _,
-  positivity,
-  refine add_le_add rfl.ge _,
-  rw sq,
-  refine mul_le_mul rfl.ge _ (norm_nonneg _) (norm_nonneg _),
-  refine le_trans h _,
-  simp only [le_add_iff_nonneg_right],
-  positivity,
-  have h₁: 1 / (1 + ‖x‖ ^ 2) = ‖x‖ / (‖x‖ *(1 + ‖x‖ ^ 2)), 
-  rw [div_mul_eq_div_mul_one_div, div_self _, one_mul],
-  positivity,
-  rw h₁,
-  refine div_le_div (norm_nonneg _) rfl.ge _ _,
-  positivity,
-  rw [mul_add, mul_one],
-  simp only [le_add_iff_nonneg_left, zero_le_one],
-end
-
-lemma moderate_decrease_pow_bounded_const_div_one_add_norm_mul_one_add_sq (f : schwartz_map ℝ ℂ) :
-∀ k : ℕ, ∃ C : ℝ, ∀ x : ℝ, ‖x‖^k * ‖f.to_fun x‖ ≤  (C)/(1+ ‖x‖*(1+ ‖x‖^2)) :=
-begin
-  intro k,
-  have h₁:= f.decay',  have h₂:= f.decay',  have h₃:= f.decay',
-  specialize h₁ (k),  specialize h₂ (k+1), specialize h₃ (k+3),
-  specialize h₁ 0,  specialize h₂ 0, specialize h₃ 0,
-  obtain ⟨C₁,h₁⟩:=h₁,  obtain ⟨C₂,h₂⟩:=h₂,  obtain ⟨C₃,h₃⟩:=h₃,
-  use (C₁ + C₂ + C₃),
-  intro x,
-  rw [le_div_iff _, mul_add, mul_add, mul_add, mul_one, mul_one],
-  nth_rewrite 2 ← pow_one (‖x‖),
-  nth_rewrite 4 ← pow_one (‖x‖),
-  rw [← pow_add _ _, ← add_assoc],
-  nth_rewrite 1 mul_comm _ (‖f.to_fun x‖),
-  nth_rewrite 1 mul_comm _ (‖f.to_fun x‖),
-  refine add_le_add (add_le_add _ _) _,
-  {specialize h₁ x,  
-  simp only [norm_iterated_fderiv_zero] at h₁, 
-  refine h₁,},
-  {rw [mul_assoc, ← pow_add _ _, mul_comm],
-  specialize h₂ x, 
-  simp only [norm_iterated_fderiv_zero] at h₂,
-  refine h₂,},
-  {have h₄: 1 + 2 = 3, ring_nf,
-  rw [h₄, mul_assoc, ← pow_add _ _, mul_comm],
-  specialize h₃ x,
-  simp only [norm_iterated_fderiv_zero] at h₃,
-  refine h₃,},
-  {positivity,},
-end
-
-
-lemma rewrite_bound {y C₁: ℝ} (h : 0 ≤ C₁) : 
-(2 * (|real.pi|) * ‖y‖) * ((C₁)/(1+ ‖y‖*(1+ ‖y‖^2))) ≤ C₁ * 2 * (|real.pi| / (1 + ‖y‖ ^ 2)) :=
-begin
-  rw div_eq_mul_one_div,
-  rw ← mul_assoc,
-  rw mul_assoc _ (‖y‖) _,
-  rw mul_comm (‖y‖) _,
-  repeat {rw ← mul_assoc,},
-  rw mul_assoc,
-  rw ← div_eq_mul_one_div,
-  nth_rewrite 1 div_eq_mul_one_div,
-  repeat {rw ← mul_assoc,},
-  refine mul_le_mul _ _ _ _,
-  rw mul_comm _ C₁,
-  rw mul_assoc,
-  exact bound_one_div_one_add_sq,
-  positivity,
-  positivity,
-end
-
-
-lemma deriv_cexp_mul_schwartz_moderate_decrease (f :schwartz_map ℝ ℂ) : 
-∀ x : ℝ, ∃ (C : ℝ), ∀ᵐ (a : ℝ), ∀ (x_1 : ℝ), x_1 ∈ metric.ball x (‖C‖+1) → ‖deriv (λ (w : ℝ), cexp (-(2 * ↑real.pi * ↑a * ↑w * I)) * f.to_fun a) x_1‖ ≤ (C) / (1 + ‖a‖ ^ 2) :=
-begin
-   have h₁:=moderate_decrease_pow_bounded_const_div_one_add_norm_mul_one_add_sq f,
-  specialize h₁ 0, 
-  intro x, 
-  obtain ⟨C₁,h₁⟩:=h₁,
-  use (C₁*2 * |real.pi|), 
-  refine eventually_of_forall _,  
-  intro y,  intros w hw,
-  have h₂:= deriv_cexp_bound_explicit y,
-  specialize h₁ y, 
-  specialize h₂ w, 
-  rw [pow_zero,one_mul] at h₁,
-  simp only [deriv_mul_const_field', norm_mul, pow_bit0_abs],
-  rw mul_div_assoc,
-  --have h₃: (2 * (|real.pi|) * ‖y‖) * ((C₁)/(1+ ‖y‖*(1+ ‖y‖^2))) ≤ C₁ * 2 * (|real.pi| / (1 + ‖y‖ ^ 2)), sorry,
-  refine le_trans _ (rewrite_bound _),
-  convert mul_le_mul h₂ h₁ _ _,
-  ext1 b,
-  repeat {rw ←neg_mul,},
-  rw [mul_comm _ I, mul_comm _ I],
-  congr,
-  norm_cast,
-  rw [mul_assoc _ b _, mul_assoc _ _ b, mul_comm _ b],
-  positivity,
-  positivity,
-  rw le_div_iff _ at h₁,
-  refine le_trans _ h₁,
-  positivity,
-  positivity,
+  intro y,
+  intro hy,
+  rw has_deriv_at_deriv_iff,
+  dsimp,
+  refine differentiable_at.mul _ (differentiable_at_const _),
+  refine differentiable_at.cexp _,
+  refine differentiable_at.neg _,
+  refine differentiable_at.mul_const _ _,
+  refine differentiable_at.const_mul _ _,
+  refine differentiable_at.comp _ _ differentiable_at_id,
+  refine of_real_clm.differentiable_at,
 end
 
 
@@ -1501,6 +1440,111 @@ deriv (λ (w : ℝ), ∫ (v : ℝ), cexp (-(2 * ↑real.pi * ↑v * ↑w * I)) *
 begin
   convert has_deriv_at.deriv has_deriv_fourier_transform,
 end
+
+
+lemma deriv_cexp' {h : ℝ}: 
+deriv (λ (y : ℝ), cexp (-(2 * ↑real.pi * ↑h * ↑y * I)))  = deriv (λ (y : ℝ), cexp ((↑((-2) * real.pi * h) * I)* y)) :=
+begin 
+  ext1 x,congr,ext1 y,repeat {rw ← neg_mul,}, rw [mul_comm _ I, mul_comm _ I], repeat {rw ← mul_assoc,},repeat {rw mul_assoc,},
+  rw ← mul_assoc _ (h : ℂ) _, norm_cast, repeat {rw ← mul_assoc,},
+end
+
+
+lemma integral_deriv_cexp' (f : schwartz_map ℝ ℂ) {x : ℝ}:  
+∫ (v : ℝ), deriv (λ (w : ℝ), cexp (-(2 * ↑real.pi * ↑v * ↑w * I)) * f.to_fun v) x =  (∫ (v : ℝ),  (λ (w : ℝ), -(2 * ↑real.pi * ↑v * I) * cexp (-(2 * ↑real.pi * ↑v * ↑w * I)) * f.to_fun v) x) :=
+begin
+  congr, ext1 x, rw [deriv_mul_const,deriv_cexp',deriv_exp_neg_complex_mul], dsimp, rw neg_mul, congr,
+  repeat {rw ← neg_mul,},congr,norm_cast, repeat {rw ← mul_assoc,}, repeat {rw ← neg_mul,},
+  repeat {rw ← neg_mul,}, rw mul_comm _ I, rw mul_comm _ I, rw mul_assoc I _ _, 
+  congr,norm_cast, 
+  refine differentiable.differentiable_at _,
+  refine differentiable.cexp _,
+  refine differentiable.neg _,
+  refine differentiable.mul_const _ _,
+  refine differentiable.const_mul _ _,
+  refine differentiable.comp _ differentiable_id,
+  refine of_real_clm.differentiable,
+end
+
+
+lemma fourier_integral_eq_integral_exp_smul_funext (f : schwartz_map ℝ ℂ) : 𝓕 f.to_fun = λ (w : ℝ), ∫ (v : ℝ), cexp (-(2 * ↑real.pi * ↑v * ↑w * I)) * f.to_fun v :=
+begin
+  have h := funext (fourier_integral_eq_integral_exp_smul f.to_fun),
+  simp at h,  refine h,
+end
+
+
+lemma proposition_1_2_v {x : ℝ} (f : schwartz_map ℝ ℂ) : 
+real.fourier_integral (λ (x : ℝ), ((-2*real.pi*I*x) : ℂ)*(f.to_fun x)) (x) = deriv (real.fourier_integral f.to_fun) x :=
+begin 
+  rw fourier_integral_eq_integral_exp_smul,
+  rw [fourier_integral_eq_integral_exp_smul_funext, leibniz_rule, integral_deriv_cexp'],
+  congr,  ext1 v,  dsimp only,
+  repeat {rw ← neg_mul,},
+  rw [mul_comm _ (cexp(_)),mul_assoc (cexp(_)) _ _, smul_eq_mul],
+  rw [mul_assoc ((-2) * (real.pi: ℂ)) I v, mul_comm I v, ← mul_assoc ((-2) * (real.pi: ℂ)) v I],
+  congr,
+  norm_cast,
+end
+
+
+-- # We now prove proposition_1_2_v_iterated
+lemma integral_deriv_rw (f : schwartz_map ℝ ℂ) {x : ℝ}: 
+(λ (n : ℝ), ∫ (v : ℝ) in -n..n, deriv (λ (w : ℝ), cexp (-(2 * ↑real.pi * ↑v * ↑w * I)) * f.to_fun v) x) = λ (n : ℝ), (∫ (v : ℝ) in -n..n,  (λ (w : ℝ), -(2 * ↑real.pi * ↑v * I) * cexp (-(2 * ↑real.pi * ↑v * ↑w * I)) * f.to_fun v) x) :=
+begin
+  ext1 n, congr, ext1 x, rw [deriv_mul_const,deriv_cexp',deriv_exp_neg_complex_mul], dsimp, rw neg_mul, congr,
+  repeat {rw ← neg_mul,},congr,norm_cast, repeat {rw ← mul_assoc,}, repeat {rw ← neg_mul,},
+  repeat {rw ← neg_mul,}, rw mul_comm _ I, rw mul_comm _ I, rw mul_assoc I _ _, 
+  congr,norm_cast, 
+  refine differentiable.differentiable_at _,
+  refine differentiable.cexp _,
+  refine differentiable.neg _,
+  refine differentiable.mul_const _ _,
+  refine differentiable.const_mul _ _,
+  refine differentiable.comp _ differentiable_id,
+  refine of_real_clm.differentiable,
+end
+
+
+lemma functions_equal_1 {f : schwartz_map ℝ ℂ} {x : ℝ}: 
+(λ (v : ℝ), (λ (v : ℝ), ↑v * I * cexp ((-2) * ↑real.pi * ↑v * ↑x * I) * f.to_fun v) v) = λ (v : ℝ), I * (λ (v : ℝ), cexp ((-2) * ↑real.pi * ↑v * ↑x * I) * (↑v * f.to_fun v)) v :=
+begin
+  ext1 v,  dsimp,
+  rw [mul_comm _ I,mul_assoc I _ _, mul_assoc I _ _, mul_comm (v : ℂ) _, mul_assoc _ (v : ℂ) _],
+end
+
+
+lemma functions_equal_2 {f : schwartz_map ℝ ℂ} {x : ℝ}: 
+(λ (v : ℝ), (-2) * (real.pi: ℂ) * ↑v * I * cexp ((-2) * (real.pi: ℂ) * ↑v * ↑x * I) * (f.to_fun v)) =(λ (v : ℝ), ((-2) * (real.pi: ℂ)) * (λ (v : ℝ), ↑v * I * cexp ((-2) * (real.pi: ℂ) * ↑v * ↑x * I) * f.to_fun v) v) :=
+begin
+  ext1 v, dsimp, repeat{rw ← mul_assoc,},
+end
+
+
+lemma cexp_mul_schwartz_moderate_decrease (f :schwartz_map ℝ ℂ) : 
+∃ (C : ℝ), ∀ x : ℝ, ∀ᵐ (v : ℝ), ‖(cexp (↑((-2) * real.pi * v * x) * I) • (f.to_fun v))‖ ≤ (λ x : ℝ, (‖C‖ /(1 + ‖x‖^2))) v :=
+begin
+  have h₁:=moderate_decrease_pow f,
+  specialize h₁ 0, 
+  obtain ⟨C,h₁⟩:=h₁, 
+  use C, 
+  intro h, 
+  refine eventually_of_forall _,  
+  intro y, 
+  specialize h₁ y, 
+  rw [pow_zero,one_mul] at h₁,
+  simp_rw [norm_smul _ _, complex.norm_exp_of_real_mul_I _, one_mul],  
+  refine le_trans h₁ _, 
+  refine div_le_div (norm_nonneg _) (real.le_norm_self _) _ rfl.ge, 
+  positivity, 
+end
+
+
+lemma smul_moderate_decrease_eq {C : ℝ} {n : ℕ}:
+(λ (x : ℝ), ‖(-(2: ℂ)) ^ n‖ • ‖I ^ n‖ • ‖(real.pi: ℂ) ^ n‖ * (‖C‖ / (1 + ‖x‖ ^ 2)))  =(λ (x : ℝ), ((‖(-(2: ℂ)) ^ n‖ • ‖I ^ n‖ • ‖(real.pi: ℂ) ^ n‖ * ‖C‖) / (1 + ‖x‖ ^ 2))) :=
+begin
+  ext1 x, rw div_eq_mul_one_div, nth_rewrite_rhs 0 div_eq_mul_one_div, repeat {rw ← mul_assoc,},
+end 
 
 
 lemma cont_diff_pow_mul_schwartz {n : ℕ} {f :schwartz_map ℝ ℂ}: 
@@ -1624,44 +1668,6 @@ begin
 end 
 
 
-lemma integral_deriv_cexp' (f : schwartz_map ℝ ℂ) {x : ℝ}:  
-∫ (v : ℝ), deriv (λ (w : ℝ), cexp (-(2 * ↑real.pi * ↑v * ↑w * I)) * f.to_fun v) x =  (∫ (v : ℝ),  (λ (w : ℝ), -(2 * ↑real.pi * ↑v * I) * cexp (-(2 * ↑real.pi * ↑v * ↑w * I)) * f.to_fun v) x) :=
-begin
-  congr, ext1 x, rw [deriv_mul_const,deriv_cexp',deriv_exp_neg_complex_mul], dsimp, rw neg_mul, congr,
-  repeat {rw ← neg_mul,},congr,norm_cast, repeat {rw ← mul_assoc,}, repeat {rw ← neg_mul,},
-  repeat {rw ← neg_mul,}, rw mul_comm _ I, rw mul_comm _ I, rw mul_assoc I _ _, 
-  congr,norm_cast, 
-  refine differentiable.differentiable_at _,
-  refine differentiable.cexp _,
-  refine differentiable.neg _,
-  refine differentiable.mul_const _ _,
-  refine differentiable.const_mul _ _,
-  refine differentiable.comp _ differentiable_id,
-  refine of_real_clm.differentiable,
-end
-
-
-lemma fourier_integral_eq_integral_exp_smul_funext (f : schwartz_map ℝ ℂ) : 𝓕 f.to_fun = λ (w : ℝ), ∫ (v : ℝ), cexp (-(2 * ↑real.pi * ↑v * ↑w * I)) * f.to_fun v :=
-begin
-  have h := funext (fourier_integral_eq_integral_exp_smul f.to_fun),
-  simp at h,  refine h,
-end
-
-
-lemma proposition_1_2_v {x : ℝ} (f : schwartz_map ℝ ℂ) : 
-real.fourier_integral (λ (x : ℝ), ((-2*real.pi*I*x) : ℂ)*(f.to_fun x)) (x) = deriv (real.fourier_integral f.to_fun) x :=
-begin 
-  rw fourier_integral_eq_integral_exp_smul,
-  rw [fourier_integral_eq_integral_exp_smul_funext, leibniz_rule, integral_deriv_cexp'],
-  congr,  ext1 v,  dsimp only,
-  repeat {rw ← neg_mul,},
-  rw [mul_comm _ (cexp(_)),mul_assoc (cexp(_)) _ _, smul_eq_mul],
-  rw [mul_assoc ((-2) * (real.pi: ℂ)) I v, mul_comm I v, ← mul_assoc ((-2) * (real.pi: ℂ)) v I],
-  congr,
-  norm_cast,
-end
-
-
 def f_mul {f : schwartz_map ℝ ℂ} {m : ℕ}: schwartz_map ℝ ℂ :=
 { to_fun := λ (x : ℝ), ((-2) * ↑real.pi * I * ↑x) ^ m * ((f.to_fun x) : ℂ),
   smooth' :=
@@ -1718,6 +1724,7 @@ begin
 end
 
 
+-- # We now prove that the fourier transform is a schwartz_map
 lemma n_top_integral_real (f : ℝ → ℝ) (hf : measure_theory.integrable (λ (v : ℝ), f v) measure_theory.measure_space.volume) :
 tendsto (λ (n : ℝ), ∫ (v : ℝ) in -n..n, f v) at_top (nhds (∫ (v : ℝ), f v)) :=
 begin
@@ -1752,7 +1759,7 @@ begin
   intro x, 
   specialize h₂ x,
   refine le_trans (measure_theory.norm_integral_le_of_norm_le _ h₂) _,
-  simp_rw rewrite3,
+  simp_rw smul_moderate_decrease_eq,
   refine integrable_moderate_decrease _,
   have h₃: tendsto (λn : ℝ, ∫ (v : ℝ) in -n .. n, (λ x : ℝ, ‖C‖ / (1 + ‖x‖ ^ 2)) v) at_top (nhds(∫ (x : ℝ), (λ x : ℝ, ‖C‖ / (1 + ‖x‖ ^ 2)) x)),
     refine n_top_integral_real (λ x : ℝ, ‖C‖ / (1 + ‖x‖ ^ 2)) _,
@@ -1865,7 +1872,7 @@ begin
   refine continuous.mul _ (schwartz_map.continuous f),
   have h₁:(λ (a : ℝ), deriv (λ (x : ℝ), cexp (-(2 * ↑real.pi * ↑a * ↑x * I))) x)= (λ (a : ℝ), (λ (x : ℝ), -(2 * ↑real.pi * ↑a * I) * cexp (-(2 * ↑real.pi * ↑a * I) * ↑x)) x), 
     {ext1 a,
-    have : (λ (x : ℝ),cexp (-(2 * ↑real.pi * ↑a * ↑x * I))) = (λ (x : ℝ),cexp (-(2 * ↑real.pi * ↑a  * I) * ↑x)), by refine rewrite5,
+    have : (λ (x : ℝ),cexp (-(2 * ↑real.pi * ↑a * ↑x * I))) = (λ (x : ℝ),cexp (-(2 * ↑real.pi * ↑a  * I) * ↑x)), by refine cexp_mul_assoc,
     rw [this, deriv_exp_neg_complex_mul _ _],},
   simp_rw h₁,
   refine continuous.mul (continuous.neg _) _,
@@ -2021,6 +2028,7 @@ begin
 end
 
 
+-- # We now prove at f(h+x) and f(h-x) are schwartz_maps
 def schwartz_fourier_transform (f :schwartz_map ℝ ℂ) : schwartz_map ℝ ℂ:=
 { to_fun := λ ξ  , real.fourier_integral f.to_fun ξ,
   smooth' :=
@@ -2037,428 +2045,36 @@ def schwartz_fourier_transform (f :schwartz_map ℝ ℂ) : schwartz_map ℝ ℂ:
   end,}
 
 
-lemma continous_const_pow_mul_schwartz_map {h : ℝ} (g : schwartz_map ℝ ℂ) : 
-measure_theory.ae_strongly_measurable (λ (x : ℝ), 𝓕 g.to_fun x * (λ (x : ℝ), cexp (-↑real.pi * ↑h * ↑‖x‖ ^ 2)) x) measure_theory.measure_space.volume:=
-begin
-  refine continuous.ae_strongly_measurable _,
-  refine continuous.mul _ _,
-  refine schwartz_map.continuous (schwartz_fourier_transform g),
-  refine continuous.cexp  _,
-  refine continuous.mul continuous_const _,
-  norm_cast,
-  refine continuous.comp of_real_clm.continuous _,
-  refine continuous.pow _ 2,
-  refine continuous_norm,
-end
-
-
--- # From our previous file. Sorry'ed here :)
-def gaussian_complex2  {a : ℂ} (ha : 0 < a.re) : schwartz_map ℝ ℂ :=
-{ to_fun := λ x : ℝ , complex.exp (-a * ‖x‖^2),
-  smooth' :=
-  begin
-    refine cont_diff.comp _ _,
-    apply cont_diff.cexp,
-    exact cont_diff_id,
-    refine cont_diff.mul _ _,
-    exact cont_diff_const,
-    norm_cast,
-    refine cont_diff.comp _ _,
-    exact of_real_clm.cont_diff,
-    exact cont_diff_norm_sq ℝ ,
-  end,
-  decay' := 
-  begin
-    sorry,
-  end ,}
-
-
-lemma moderate_decrease_mul_pre (f g : schwartz_map ℝ ℂ) :
-∃ C : ℝ, ∀ x : ℝ, ‖f.to_fun x‖*‖g.to_fun x‖ ≤  (C)/ (1+‖x‖^2)^2:=
-begin
-  have h₁:=  moderate_decrease f,
-  have h₂:= moderate_decrease g,
-  obtain ⟨C₁,h₁⟩:=h₁,
-  obtain ⟨C₂,h₂⟩:=h₂,
-  use ((C₁*C₂)),
-  intro x,
-  rw [div_eq_mul_one_div, ← one_div_pow , pow_two, mul_assoc (C₁) (C₂) _, mul_comm C₂ _],
-  repeat {rw ← mul_assoc,},
-  rw mul_assoc _ (1 / (1 + ‖x‖ ^ 2)) C₂,
-  refine mul_le_mul _ _ (norm_nonneg _) _,
-  rw ← div_eq_mul_one_div,
-  refine h₁ x,
-  rw [mul_comm, ← div_eq_mul_one_div],
-  refine h₂ x,
-  rw ← div_eq_mul_one_div,
-  refine le_trans _ (h₁ x),
-  refine norm_nonneg _,
-end
-
-
-lemma one_div_le_one_div_pow_2 {x : ℝ}: 1/ (1+‖x‖^2)^2 ≤ 1/ (1+‖x‖^2) :=
-begin
-  rw one_div_le_one_div _ _,
-  refine le_self_pow _ two_ne_zero,
-  simp only [norm_eq_abs, pow_bit0_abs, le_add_iff_nonneg_right],
-  positivity, positivity, positivity,
-end
-
-
-lemma moderate_decrease_mul (f g : schwartz_map ℝ ℂ) :
-∃ C : ℝ, ∀ x : ℝ, ‖f.to_fun x‖*‖g.to_fun x‖ ≤  (C)/ (1+‖x‖^2) :=
-begin
-  have h := moderate_decrease_mul_pre f g,
-  obtain ⟨C,h⟩:=h,
-  use (C),
-  intro x,
-  specialize h x,
-  have aux : ‖f.to_fun x‖*‖g.to_fun x‖* (1+‖x‖^2)^2 ≤  (C),
-    rw ← le_div_iff _, refine h, positivity,
-  refine le_trans h _,
-  rw [div_eq_mul_one_div],
-  nth_rewrite 1 div_eq_mul_one_div,
-  refine mul_le_mul rfl.ge one_div_le_one_div_pow_2 _ _,
-  positivity,
-  refine le_trans _ aux,
-  positivity,
-end
-
-
-lemma tendsto_integral_one_div_one_add_sq_real_pi:  
-tendsto (λn : ℝ, ∫ (x : ℝ) in -n..n, (λ (x : ℝ), 1 / (1 + x ^ 2)) x) at_top (nhds (real.pi / 2 + real.pi / 2)) :=
-begin
-  simp_rw integral_one_div_one_add_sq,
-  simp_rw sub_eq_add_neg,
-  refine filter.tendsto.add tendsto_arctan_at_top _,
-  simp_rw [real.arctan_neg _,neg_neg],
-  refine tendsto_arctan_at_top,
-end
-
-
-lemma exist_integral_moderate_decrease_bounded (C : ℝ) : 
-∃ I: ℝ , ∫ (x : ℝ), (λ (x : ℝ), ‖C‖ / (1 + ‖x‖ ^ 2)) x ≤ I:=
-begin
-  use (((real.pi/2)+(real.pi/2))*‖C‖),
-  have h₁: ∫ (x : ℝ), (λ (x : ℝ), ‖C‖ / (1 + ‖x‖ ^ 2)) x = (∫ (x : ℝ), 1 / (1 + ‖x‖ ^ 2)) * ‖C‖, 
-  {rw [←smul_eq_mul,←integral_smul_const], congr, ext1, dsimp only,
-   rw [div_eq_mul_one_div,smul_eq_mul, mul_comm],},
-  rw h₁,
-  refine mul_le_mul _ rfl.ge (norm_nonneg _) _,
-  have h₂: tendsto (λn : ℝ, ∫ (x : ℝ) in -n..n, (λ (x : ℝ), 1 / (1 + ‖x‖ ^ 2)) x) at_top (nhds (real.pi / 2 + real.pi / 2)), 
-    {convert tendsto_integral_one_div_one_add_sq_real_pi, ext1 n,
-    congr, dsimp only, ext1 x,simp only [norm_eq_abs, pow_bit0_abs],},
-  refine  tendsto_nhds_unique_le _ h₂,
-  have h₃:= n_top_integral_real (λ x : ℝ,(λ (x : ℝ), 1 / (1 + ‖x‖ ^ 2)) x) (integrable_moderate_decrease _),
-  dsimp only at h₃,
-  convert h₃,
-  rw ←zero_add (0: ℝ), 
-  refine add_le_add (le_of_lt real.pi_div_two_pos) (le_of_lt real.pi_div_two_pos),
-end
-
-
--- # From our previous file. Sorry'ed here :)
-lemma exp_a_neg_sq_le_one {a : ℂ} (ha : 0 < a.re) : 
-∀ x : ℝ , complex.abs (complex.exp (-a*x^2)) ≤ 1 := sorry
-
-
-lemma schwartz_mul_cexp_moderate_decrease_nhds_within_0 (g : schwartz_map ℝ ℂ) : 
-∃ C : ℝ, ∀ᶠ (n : ℝ) in nhds_within 0 (Ioi 0), ∀ᵐ (a : ℝ), ‖𝓕 g.to_fun a * (λ (x : ℝ), cexp (-↑real.pi * ↑n * ↑‖x‖ ^ 2)) a‖ ≤ ‖C‖  / (1 + ‖a‖ ^ 2) :=
-begin
-  have h₈:= moderate_decrease (schwartz_fourier_transform g),
-  obtain ⟨C,h₈⟩:=h₈,
-  use C,
-  refine eventually_nhds_within_iff.mpr _,
-  refine eventually_of_forall _,
-  intros n hn,
-  have hπn : 0< ((real.pi*n) : ℂ).re, by by {norm_cast, rw set.mem_Ioi at hn, rw zero_lt_mul_right hn, exact pi_pos,},
-  have h₂:=moderate_decrease ((gaussian_complex2 hπn)),
-  obtain ⟨C₂,h₂⟩:=h₂,
-  refine eventually_of_forall _,
-  intro x,
-  rw [norm_mul,  ← mul_one (‖C‖ / (1 + ‖x‖ ^ 2))], 
-  refine mul_le_mul _ _ (norm_nonneg _) _,
-  {convert le_trans (h₈ x) (le_norm_self _),
-  rw norm_div, 
-  congr,
-  simp only [norm_eq_abs, pow_bit0_abs],
-  symmetry,
-  rw abs_eq_self,
-  positivity,},
-  {have hπn : 0< ((real.pi*n) : ℂ).re, by by {norm_cast, rw zero_lt_mul_right hn, exact pi_pos,},
-  convert exp_a_neg_sq_le_one hπn x, 
-  have h₁: (x : ℂ) ^ 2 = ‖x‖ ^ 2, norm_cast,simp only [norm_eq_abs, pow_bit0_abs],
-  rw h₁,
-  repeat {rw ←neg_mul,},},
-  {positivity,},
-end
-
-
-lemma tendsto_coe:  tendsto (λ (k : ℝ), (k : ℂ)) (nhds_within 0 (Ioi 0)) (nhds 0) :=
-begin
-  exact (complex.continuous_of_real.tendsto' 0 _ complex.of_real_zero).mono_left nhds_within_le_nhds,
-end
-
-
-lemma converges_proper (g : schwartz_map ℝ ℂ) : 
-tendsto (λ δ : ℝ  ,  ∫ (x : ℝ), 𝓕 g.to_fun x * ((λ x : ℝ , complex.exp (-real.pi *δ* ‖x‖^2)) x)) (nhds_within 0 (set.Ioi 0)) (nhds (∫ (x : ℝ), 𝓕 g.to_fun x)) :=
-begin
-  have h₂: ∃ C : ℝ, ∀ᶠ (n : ℝ) in nhds_within 0 (Ioi 0), ∀ᵐ (a : ℝ), ‖𝓕 g.to_fun a * (λ (x : ℝ), cexp (-↑real.pi * ↑n * ↑‖x‖ ^ 2)) a‖ ≤ ‖C‖  / (1 + ‖a‖ ^ 2), 
-    refine schwartz_mul_cexp_moderate_decrease_nhds_within_0 g,
-  obtain ⟨C,h₂⟩:=h₂,
-  refine  measure_theory.tendsto_integral_filter_of_dominated_convergence _ _ h₂ _ _,
-  {refine filter.eventually_of_forall _, intro x, exact continous_const_pow_mul_schwartz_map _,},
-  convert integrable_moderate_decrease _,
-  refine filter.eventually_of_forall _,
-  intro x,
-  have  h₁: 𝓕 g.to_fun x = 𝓕 g.to_fun x * 1, rw mul_one,
-  nth_rewrite 0 h₁,
-  refine filter.tendsto.mul _ _,
-  simp only [tendsto_const_nhds_iff],
-  have h₂: cexp(0) = 1, simp only [complex.exp_zero],
-  rw ← h₂,
-  refine filter.tendsto.cexp _,
-  have h₃: 0 = 0 * ((‖x‖: ℂ) ^ 2), rw zero_mul,
-  rw h₃,
-  refine filter.tendsto.mul_const _ _,
-  have h₄: 0 =  (-real.pi: ℂ) * 0, rw mul_zero,
-  rw h₄,
-  refine filter.tendsto.const_mul _ _,
-  refine tendsto_coe,
-end
-
-
-def schwartz_mul  (f : schwartz_map ℝ ℂ) (h : ℝ) : schwartz_map ℝ ℂ :=
-{ to_fun := λ (y : ℝ), f.to_fun (h*y),
-  smooth' :=
-  begin
-    refine cont_diff.comp f.smooth' _,
-    refine cont_diff.mul (cont_diff_const) (cont_diff_id),
-  end,
-  decay' := 
-  begin
-    sorry, -- realized we needed this, have not have had the time to formalize
-  end ,}
-
-
-lemma cexp_delta_cancel {δ x : ℝ} {f : schwartz_map ℝ ℂ} (h : 0 < δ) : (λ (v : ℝ), cexp (↑((-2) * real.pi * 1 / δ * (δ * v) * x) * I) • f.to_fun (δ * v)) = λ (v : ℝ), cexp (-(2 * ↑real.pi * ↑v * ↑x * I)) * (schwartz_mul f δ).to_fun v :=
-begin
-  ext1 v,  congr,
-  repeat {rw ←neg_mul,},
-  norm_cast,
-  repeat {rw ← mul_assoc,},
-  rw [mul_assoc _ v x, mul_assoc _ v x,mul_comm _ (v*x),mul_comm _ (v*x),
-  mul_div_assoc,mul_assoc _ (1/δ) δ,one_div_mul_cancel, mul_one],
-  positivity,
-end
-
-
-lemma tendsto1 {δ x : ℝ} {f : schwartz_map ℝ ℂ} (h : 0 < δ) : tendsto (λn : ℝ,∫ (v : ℝ) in -n..n, (λw : ℝ,  cexp (↑((-2) * real.pi * 1/δ*(w) * x) * I) • f.to_fun (w)) (δ*v)) at_top (nhds(∫ (v : ℝ), (λw : ℝ,  cexp (↑((-2) * real.pi * 1/δ*(w) * x) * I) • f.to_fun (w)) (δ*v))) :=
+-- # Credit to Alain for coming up with this idea. 
+-- # Unfortunately, we were not able to resolve it for (f : ℝ → ℂ) 
+lemma iter_deriv_at_add_h_eq_iter_deriv_add_h (f : ℂ  → ℂ) (hc : cont_diff ℂ ⊤ f) (h : ℝ) (n : ℕ) : (λ (x : ℝ ),  iterated_deriv n f (h + x)) =  iterated_deriv n (λ (y : ℝ), f(h + y)) :=
 begin 
-  simp_rw rewrite_imaginary_part,
-  have h₁: tendsto (λ (n : ℝ), -n) at_top at_bot, by {simp only [tendsto_neg_at_bot_iff], exact rfl.ge,},
-  have h₂: tendsto (λ (n : ℝ), n) at_top at_top, by {exact rfl.ge,},
-  convert measure_theory.interval_integral_tendsto_integral (integrable_exp_mul_schwartz2 (x) (schwartz_mul f δ)) h₁ h₂,
-  {ext1 n,  congr,refine cexp_delta_cancel h,},
-  {refine cexp_delta_cancel h,},
-end
-
-
-lemma cexp_bound' (h : ℝ) {a : ℝ} : 
-∃ (C : ℝ), ∀ (x : ℝ), ‖cexp (↑((a) * x * h) * I)‖ ≤ C :=
-begin
-  use 1,  intro x,  rw [complex.norm_exp_of_real_mul_I _],
-end
-
-
-lemma continuous_cexp' {x a : ℝ} : continuous (λ (v : ℝ), cexp ((a : ℂ) * ↑v * ↑x * I)) :=
-begin
-  refine continuous.cexp  _,
-  refine continuous.mul _ continuous_const,
-  refine continuous.mul _ continuous_const,
-  refine continuous.mul continuous_const _,
-  refine continuous.comp of_real_clm.continuous continuous_id,
-end
-
-
-lemma integrable_exp_mul_schwartz4 (x : ℝ) (f : schwartz_map ℝ ℂ){C : ℝ}:
-measure_theory.integrable (λ (v : ℝ), (λ (w : ℝ), cexp (((C) * ↑v * ↑w * I)) * f.to_fun v) x) measure_theory.measure_space.volume:=
-begin
-  convert integrable_mul_schwartz_map _ (λ (v : ℝ), cexp ((C * ↑v * ↑x * I))) (integrable_schwartz_map (f)) _ _,
-  have h₂:=cexp_bound' x,
-  obtain ⟨C,h₂⟩:=h₂,
-  use C,
-  intro x, specialize h₂ x,
-  convert h₂,
-  repeat {rw ←neg_mul,},
-  norm_cast,
-  convert continuous_cexp',
-end
-
-
-lemma cexp_const_mul_smul {δ x : ℝ} {f : schwartz_map ℝ ℂ}: 
-(λ (v : ℝ), cexp (-(2 * ↑real.pi * ↑(x / δ) * ↑v * I)) • f.to_fun v) = λ (v : ℝ), cexp (↑(((-2:ℤ) : ℝ) * real.pi * (1 / δ)) * ↑v * ↑x * I) * f.to_fun v :=
-begin
-  ext1 v,
-  rw smul_eq_mul,
-  repeat {rw ← neg_mul,},
-  rw div_eq_mul_one_div,
-  nth_rewrite_rhs 0 mul_assoc, 
-  nth_rewrite_rhs 0 mul_assoc, 
-  rw [← mul_assoc (v : ℂ) (x : ℂ) _, mul_comm (v : ℂ) (x : ℂ)],
-  repeat {rw ← mul_assoc,},
-  rw mul_comm x _,
-  norm_cast,
-  repeat {rw ← mul_assoc,},
-end
-
-
-lemma tendsto2{δ x : ℝ} {f : schwartz_map ℝ ℂ} (h : 0 < δ) : 
-tendsto (λ (n : ℝ), (1 / (δ: ℂ)) * ∫ (v : ℝ) in (δ * -n)..(δ * n), (λ (w : ℝ), cexp (↑((-(2: ℝ)) * real.pi * 1 / δ * w * x) * I) • f.to_fun w) (v)) at_top (nhds (1 / ↑δ * ∫ (v : ℝ), cexp (↑((-(2: ℝ)) * real.pi * v * (x / δ)) * I) • f.to_fun v)) :=
-begin
-  simp_rw rewrite_imaginary_part,
-  refine filter.tendsto.const_mul _ _,
-  have h₁: tendsto (λ (n : ℝ), δ*(-n)) at_top at_bot, by {simp only [mul_neg,tendsto_neg_at_bot_iff],refine filter.tendsto.const_mul_at_top h _, exact rfl.ge,},
-  have h₂: tendsto (λ (n : ℝ), δ*(n)) at_top at_top, by {refine filter.tendsto.const_mul_at_top h _, exact rfl.ge,},
-  have h₃: 0<1/δ, positivity,
-  have h₄:= measure_theory.interval_integral_tendsto_integral (integrable_exp_mul_schwartz4 (x) f) h₁ h₂,
-  dsimp at h₄,
-  convert h₄,
-  {ext1 n, congr, ext1 v,
-  rw ← smul_eq_mul,
-  repeat {rw ← neg_mul,},
-  congr,
-  rw mul_div_assoc,
-  norm_cast,},
-  {refine cexp_const_mul_smul,},
-end
-
-
-lemma proposition_1_2_iii {x δ : ℝ} (f : schwartz_map ℝ ℂ) (h : 0 < δ) : 
-real.fourier_integral (λ (y : ℝ), f.to_fun (δ*y)) x = (1/δ) * real.fourier_integral f.to_fun (x/δ) :=
-begin
-  rw fourier_integral_eq_integral_exp_smul,
-  rw fourier_integral_eq_integral_exp_smul,
-  have h₁: ∫ (v : ℝ), cexp (↑((-2) * real.pi * v * x) * I) • f.to_fun (δ * v) = ∫ (v : ℝ), (λw : ℝ,  cexp (↑((-2) * real.pi * 1/δ*(w) * x) * I) • f.to_fun (w)) (δ*v), 
-    congr, ext1 v, dsimp only, rw mul_div_assoc,rw mul_assoc _ (1 / δ) _, congr, ring_nf, rw [mul_assoc, ←one_div, mul_comm δ _,one_div_mul_cancel,mul_one],positivity,
-  rw h₁,
-  refine tendsto_nhds_unique (tendsto1 h) _,
-  convert tendsto2 h,
-  ext1 n,
-  rw interval_integral.integral_comp_mul_left,
-  rw ← smul_eq_mul,
-  rw one_div,
-  norm_cast,
-  positivity,
-end
-
-
-lemma cexp_sqrt_delta_eq_cexp_abs {x δ : ℝ} (h : 0 < δ) : 
-cexp (-(real.pi: ℂ) * ↑(x / δ ^ ((1 / 2) : ℝ)) ^ 2) = cexp (-(↑real.pi / ↑δ) * ↑|x| ^ 2) :=
-begin
-  norm_cast,
-  rw div_pow,
-  rw div_eq_mul_one_div,
-  nth_rewrite_rhs 0 div_eq_mul_one_div,
-  rw ← neg_mul,
-  repeat {rw ← mul_assoc,},
-  have h₁: (δ ^ ((1 / 2) : ℝ)) ^ 2 = δ, by {rw [← real.sqrt_eq_rpow, real.sq_sqrt], positivity,},
-  rw [h₁, mul_assoc _ (x^2) _, mul_comm (x^2) _, ← mul_assoc _ _ (x^2), ← abs_sq],
-  congr,
-  simp only [_root_.abs_pow],
-end
-
-
-lemma fourier_integral_norm_sqrt_delta {x δ : ℝ} (h : 0 < δ) : 
-real.fourier_integral  (λ x : ℝ, complex.exp (-((real.pi*δ) : ℂ)* ‖x‖^2)) x = real.fourier_integral  (λ x : ℝ, (λ y : ℝ,complex.exp (-((real.pi) : ℂ)* ‖y‖^2)) ((δ^((1/2) : ℝ))*x)) x :=
-begin
-  congr,
+  induction n with n hn,
+  { simp only [iterated_deriv_zero] },
+  {nth_rewrite_rhs 0 iterated_deriv_succ ,
+  rw ← hn,
+  have : (λ (x : ℝ ),  iterated_deriv n f (h + x)) = (iterated_deriv n f) ∘ (λ x, h + x), by  refl,
+  rw [this],
+  ext1,
+  rw deriv.comp, -- the issue is that deriv.comp cannot allow f : ℝ → ℂ
+  simp only [deriv_const_add', deriv_id'', mul_one],
+  rw [iterated_deriv_succ,deriv_complex_id'],
   dsimp,
-  norm_cast,
-  ext1 x,
-  rw [abs_mul, mul_pow, ←neg_mul],
-  repeat {rw ← mul_assoc,},
-  congr, 
-  simp only [_root_.abs_pow],
-  rw [← real.sqrt_eq_rpow, ← norm_eq_abs, ← norm_pow, real.sq_sqrt, norm_eq_abs],
-  symmetry,
-  rw abs_eq_self,
-  positivity,
-  positivity,
+  rw mul_one,
+  refine differentiable.differentiable_at  (cont_diff.differentiable_iterated_deriv n hc (with_top.coe_lt_top n)),
+  simp only [differentiable_at_const_add_iff, differentiable_at_id'],
+  refine complex.of_real_clm.differentiable_at,},
 end
 
-
-lemma gaussian_pi_eq_gaussian_complex_pi {x δ : ℝ} (h : 0 < δ) : 
-𝓕 gaussian_pi.to_fun (x / δ ^ ((1 / 2) : ℝ)) = 𝓕 gaussian_complex_pi.to_fun (x / δ ^ ((1 / 2) : ℝ)) :=
-begin
-  rw fourier_integral_eq_integral_exp_smul,
-  rw fourier_integral_eq_integral_exp_smul,
-  congr,
-  ext1 v,
-  have h₁: gaussian_complex_pi.to_fun = λ x : ℝ, complex.exp (-real.pi * x ^ 2), refl,
-  have h₂: gaussian_pi.to_fun = λ x : ℝ, complex.exp (-real.pi * ‖x‖ ^ 2), refl,
-  rw [h₁,h₂],
-  dsimp,
-  norm_cast,
-  have : (v) ^ 2 = |v| ^ 2, simp only [pow_bit0_abs],
-  rw this,
-end
-
-
-lemma good_kernel_fourier_transform(x : ℝ) {δ : ℝ} (hδ : 0<δ) : 
-real.fourier_integral  (λ x : ℝ, complex.exp (-((real.pi*δ) : ℂ)* ‖x‖^2)) x  = (λ x : ℝ, (sqrt (1 / δ) : ℂ)  * complex.exp ((-((real.pi/δ) : ℂ)* ‖x‖^2))) x :=
-begin
-  have h₁: 0< ((real.pi*δ) : ℂ).re, by {norm_cast,rw zero_lt_mul_right hδ,exact pi_pos,},
-  have h₃: real.fourier_integral  (λ x : ℝ, complex.exp (-((real.pi*δ) : ℂ)* ‖x‖^2)) x = real.fourier_integral  (λ x : ℝ, (λ y : ℝ,complex.exp (-((real.pi) : ℂ)* ‖y‖^2)) ((δ^((1/2) : ℝ))*x)) x, by {refine fourier_integral_norm_sqrt_delta hδ,},
-  have h₄: 𝓕 (λ (x : ℝ), (λ (y : ℝ), cexp (-↑real.pi * ↑‖y‖ ^ 2)) (δ ^ ((1 / 2) : ℝ) * x)) x = 𝓕 (λ (x : ℝ), (gaussian_pi.to_fun) (δ ^ ((1 / 2) : ℝ) * x)) x, by {congr,},
-  have h₅:= proposition_1_2_iii (gaussian_pi) _,
-  rw [h₃,h₄,h₅],
-  congr,
-  norm_cast,
-  rw [← real.sqrt_eq_rpow, sqrt_div, sqrt_one],
-  refine zero_le_one,
-  have h₆:= fourier_transform_eq_gaussian2 (x / δ ^ ((1 / 2) : ℝ)),
-  have h₇: gaussian_complex_pi.to_fun = λ x : ℝ, complex.exp (-real.pi * x ^ 2), refl,
-  rw [gaussian_pi_eq_gaussian_complex_pi hδ,h₆,h₇],
-  dsimp, rw cexp_sqrt_delta_eq_cexp_abs hδ, positivity,
-end
-
-
-theorem complex_coe_ne_zero {δ : ℝ} (hδ : 0<δ) : (δ: ℂ) ≠ 0:=
-begin
-  norm_cast,
-  exact ne_of_gt hδ,
-end
-
-
-theorem integral_good_kernel_eq_one {δ : ℝ} (hδ : 0<δ) : 
-∫ x : ℝ,  (1 / (δ: ℂ)^ ((1 /2) :ℤ))*cexp (- (real.pi/δ)* x^2) = 1 :=
-begin
-  have hπδ : 0< ((real.pi/δ) : ℂ).re, by {norm_cast, rw [lt_div_iff hδ, zero_mul], exact pi_pos,},
-  have h :=integral_gaussian_complex hπδ,
-  simp_rw [mul_comm (1 / (δ: ℂ)^ (_ / _)) _, ← smul_eq_mul],
-  rw integral_smul_const,
-  simp_rw smul_eq_mul,
-  rw [h,div_div_eq_mul_div , mul_div_right_comm, div_self _, one_mul,←div_eq_mul_one_div], 
-  refine div_self (zpow_ne_zero _ _),
-  refine complex_coe_ne_zero hδ,
-  refine complex_coe_ne_zero pi_pos,
-end
-
--- sorry for now
-lemma iterated_fderiv_add {f : schwartz_map ℝ ℝ} {x h : ℝ} {n : ℕ}: 
-iterated_fderiv ℝ n f.to_fun (h + x) =  iterated_fderiv ℝ n (λ (y : ℝ), f.to_fun (h + y)) x :=
-begin
-  sorry,
-end
 
 lemma norm_iterated_fderiv_add {f : schwartz_map ℝ ℂ} {x h : ℝ} {n : ℕ}: 
 ‖iterated_fderiv ℝ n f.to_fun (h + x)‖ =  ‖iterated_fderiv ℝ n (λ (y : ℝ), f.to_fun (h + y)) x‖:=
 begin
-  rw iterated_fderiv_add,
+  sorry,
 end
 
-lemma iterated_fderiv_sub {f : schwartz_map ℝ ℂ} {x h : ℝ} {n : ℕ}: 
+
+lemma norm_iterated_fderiv_sub {f : schwartz_map ℝ ℂ} {x h : ℝ} {n : ℕ}: 
 ‖iterated_fderiv ℝ n f.to_fun (h - x)‖ =  ‖iterated_fderiv ℝ n (λ (y : ℝ), f.to_fun (h - y)) x‖:=
 begin
   sorry,
@@ -2651,7 +2267,7 @@ def schwartz_sub (f : schwartz_map ℝ ℂ) (h : ℝ) : schwartz_map ℝ ℂ :=
     use (2 ^ k * (1 + ‖h‖) ^ k*C),
     intro x,
     specialize h₁ (h-x), 
-    rw ← iterated_fderiv_sub,
+    rw ← norm_iterated_fderiv_sub,
     refine le_trans schwartz_sub_bound_sum _,
     rw [add_pow, finset.sum_mul],
     refine le_trans sum_pow_mul_schwartz_le_const_mul_sum_schwartz_sub  _,
@@ -2667,6 +2283,394 @@ def schwartz_sub (f : schwartz_map ℝ ℂ) (h : ℝ) : schwartz_map ℝ ℂ :=
   end ,}
 
 
+-- # We now prove that ∫ (x : ℝ), 𝓕 g.to_fun x * ((λ x : ℝ , complex.exp (-real.pi *δ* ‖x‖^2)) x) →  ∫ (x : ℝ), 𝓕 g.to_fun x as δ→0
+
+-- # From our previous file. Sorry'ed here :)
+def gaussian_complex2  {a : ℂ} (ha : 0 < a.re) : schwartz_map ℝ ℂ :=
+{ to_fun := λ x : ℝ , complex.exp (-a * ‖x‖^2),
+  smooth' :=
+  begin
+    refine cont_diff.comp _ _,
+    apply cont_diff.cexp,
+    exact cont_diff_id,
+    refine cont_diff.mul _ _,
+    exact cont_diff_const,
+    norm_cast,
+    refine cont_diff.comp _ _,
+    exact of_real_clm.cont_diff,
+    exact cont_diff_norm_sq ℝ ,
+  end,
+  decay' := 
+  begin
+    sorry,
+  end ,}
+
+
+lemma moderate_decrease_mul_pre (f g : schwartz_map ℝ ℂ) :
+∃ C : ℝ, ∀ x : ℝ, ‖f.to_fun x‖*‖g.to_fun x‖ ≤  (C)/ (1+‖x‖^2)^2:=
+begin
+  have h₁:=  moderate_decrease f,
+  have h₂:= moderate_decrease g,
+  obtain ⟨C₁,h₁⟩:=h₁,
+  obtain ⟨C₂,h₂⟩:=h₂,
+  use ((C₁*C₂)),
+  intro x,
+  rw [div_eq_mul_one_div, ← one_div_pow , pow_two, mul_assoc (C₁) (C₂) _, mul_comm C₂ _],
+  repeat {rw ← mul_assoc,},
+  rw mul_assoc _ (1 / (1 + ‖x‖ ^ 2)) C₂,
+  refine mul_le_mul _ _ (norm_nonneg _) _,
+  rw ← div_eq_mul_one_div,
+  refine h₁ x,
+  rw [mul_comm, ← div_eq_mul_one_div],
+  refine h₂ x,
+  rw ← div_eq_mul_one_div,
+  refine le_trans _ (h₁ x),
+  refine norm_nonneg _,
+end
+
+
+lemma one_div_le_one_div_pow_sq {x : ℝ}: 1/ (1+‖x‖^2)^2 ≤ 1/ (1+‖x‖^2) :=
+begin
+  rw one_div_le_one_div _ _,
+  refine le_self_pow _ two_ne_zero,
+  simp only [norm_eq_abs, pow_bit0_abs, le_add_iff_nonneg_right],
+  positivity, positivity, positivity,
+end
+
+
+lemma moderate_decrease_mul (f g : schwartz_map ℝ ℂ) :
+∃ C : ℝ, ∀ x : ℝ, ‖f.to_fun x‖*‖g.to_fun x‖ ≤  (C)/ (1+‖x‖^2) :=
+begin
+  have h := moderate_decrease_mul_pre f g,
+  obtain ⟨C,h⟩:=h,
+  use (C),
+  intro x,
+  specialize h x,
+  have aux : ‖f.to_fun x‖*‖g.to_fun x‖* (1+‖x‖^2)^2 ≤  (C),
+    rw ← le_div_iff _, refine h, positivity,
+  refine le_trans h _,
+  rw [div_eq_mul_one_div],
+  nth_rewrite 1 div_eq_mul_one_div,
+  refine mul_le_mul rfl.ge one_div_le_one_div_pow_sq _ _,
+  positivity,
+  refine le_trans _ aux,
+  positivity,
+end
+
+
+-- # From our previous file. Sorry'ed here :)
+lemma exp_a_neg_sq_le_one {a : ℂ} (ha : 0 < a.re) : 
+∀ x : ℝ , complex.abs (complex.exp (-a*x^2)) ≤ 1 := sorry
+
+
+lemma schwartz_mul_cexp_moderate_decrease_nhds_within_0 (g : schwartz_map ℝ ℂ) : 
+∃ C : ℝ, ∀ᶠ (n : ℝ) in nhds_within 0 (Ioi 0), ∀ᵐ (a : ℝ), ‖𝓕 g.to_fun a * (λ (x : ℝ), cexp (-↑real.pi * ↑n * ↑‖x‖ ^ 2)) a‖ ≤ ‖C‖  / (1 + ‖a‖ ^ 2) :=
+begin
+  have h₈:= moderate_decrease (schwartz_fourier_transform g),
+  obtain ⟨C,h₈⟩:=h₈,
+  use C,
+  refine eventually_nhds_within_iff.mpr _,
+  refine eventually_of_forall _,
+  intros n hn,
+  have hπn : 0< ((real.pi*n) : ℂ).re, by by {norm_cast, rw set.mem_Ioi at hn, rw zero_lt_mul_right hn, exact pi_pos,},
+  have h₂:=moderate_decrease ((gaussian_complex2 hπn)),
+  obtain ⟨C₂,h₂⟩:=h₂,
+  refine eventually_of_forall _,
+  intro x,
+  rw [norm_mul,  ← mul_one (‖C‖ / (1 + ‖x‖ ^ 2))], 
+  refine mul_le_mul _ _ (norm_nonneg _) _,
+  {convert le_trans (h₈ x) (le_norm_self _),
+  rw norm_div, 
+  congr,
+  simp only [norm_eq_abs, pow_bit0_abs],
+  symmetry,
+  rw abs_eq_self,
+  positivity,},
+  {have hπn : 0< ((real.pi*n) : ℂ).re, by by {norm_cast, rw zero_lt_mul_right hn, exact pi_pos,},
+  convert exp_a_neg_sq_le_one hπn x, 
+  have h₁: (x : ℂ) ^ 2 = ‖x‖ ^ 2, norm_cast,simp only [norm_eq_abs, pow_bit0_abs],
+  rw h₁,
+  repeat {rw ←neg_mul,},},
+  {positivity,},
+end
+
+
+-- Credit to Eric Weiser
+lemma tendsto_coe:  tendsto (λ (k : ℝ), (k : ℂ)) (nhds_within 0 (Ioi 0)) (nhds 0) :=
+(complex.continuous_of_real.tendsto' 0 _ complex.of_real_zero).mono_left nhds_within_le_nhds
+
+
+lemma continous_const_pow_mul_schwartz_map {h : ℝ} (g : schwartz_map ℝ ℂ) : 
+measure_theory.ae_strongly_measurable (λ (x : ℝ), 𝓕 g.to_fun x * (λ (x : ℝ), cexp (-↑real.pi * ↑h * ↑‖x‖ ^ 2)) x) measure_theory.measure_space.volume:=
+begin
+  refine continuous.ae_strongly_measurable _,
+  refine continuous.mul _ _,
+  refine schwartz_map.continuous (schwartz_fourier_transform g),
+  refine continuous.cexp  _,
+  refine continuous.mul continuous_const _,
+  norm_cast,
+  refine continuous.comp of_real_clm.continuous _,
+  refine continuous.pow _ 2,
+  refine continuous_norm,
+end
+
+
+lemma converges_proper (g : schwartz_map ℝ ℂ) : 
+tendsto (λ δ : ℝ  ,  ∫ (x : ℝ), 𝓕 g.to_fun x * ((λ x : ℝ , complex.exp (-real.pi *δ* ‖x‖^2)) x)) (nhds_within 0 (set.Ioi 0)) (nhds (∫ (x : ℝ), 𝓕 g.to_fun x)) :=
+begin
+  have h₂: ∃ C : ℝ, ∀ᶠ (n : ℝ) in nhds_within 0 (Ioi 0), ∀ᵐ (a : ℝ), ‖𝓕 g.to_fun a * (λ (x : ℝ), cexp (-↑real.pi * ↑n * ↑‖x‖ ^ 2)) a‖ ≤ ‖C‖  / (1 + ‖a‖ ^ 2), 
+    refine schwartz_mul_cexp_moderate_decrease_nhds_within_0 g,
+  obtain ⟨C,h₂⟩:=h₂,
+  refine  measure_theory.tendsto_integral_filter_of_dominated_convergence _ _ h₂ _ _,
+  {refine filter.eventually_of_forall _, intro x, exact continous_const_pow_mul_schwartz_map _,},
+  convert integrable_moderate_decrease _,
+  refine filter.eventually_of_forall _,
+  intro x,
+  have  h₁: 𝓕 g.to_fun x = 𝓕 g.to_fun x * 1, rw mul_one,
+  nth_rewrite 0 h₁,
+  refine filter.tendsto.mul _ _,
+  simp only [tendsto_const_nhds_iff],
+  have h₂: cexp(0) = 1, simp only [complex.exp_zero],
+  rw ← h₂,
+  refine filter.tendsto.cexp _,
+  have h₃: 0 = 0 * ((‖x‖: ℂ) ^ 2), rw zero_mul,
+  rw h₃,
+  refine filter.tendsto.mul_const _ _,
+  have h₄: 0 =  (-real.pi: ℂ) * 0, rw mul_zero,
+  rw h₄,
+  refine filter.tendsto.const_mul _ _,
+  refine tendsto_coe,
+end
+
+
+-- # we now formalize proposition_1_2 iii
+def schwartz_mul  (f : schwartz_map ℝ ℂ) (h : ℝ) : schwartz_map ℝ ℂ :=
+{ to_fun := λ (y : ℝ), f.to_fun (h*y),
+  smooth' :=
+  begin
+    refine cont_diff.comp f.smooth' _,
+    refine cont_diff.mul (cont_diff_const) (cont_diff_id),
+  end,
+  decay' := 
+  begin
+    sorry, -- realized we needed this, have not have had the time to formalize
+  end ,}
+
+
+lemma cexp_delta_cancel {δ x : ℝ} {f : schwartz_map ℝ ℂ} (h : 0 < δ) : (λ (v : ℝ), cexp (↑((-2) * real.pi * 1 / δ * (δ * v) * x) * I) • f.to_fun (δ * v)) = λ (v : ℝ), cexp (-(2 * ↑real.pi * ↑v * ↑x * I)) * (schwartz_mul f δ).to_fun v :=
+begin
+  ext1 v,  congr,
+  repeat {rw ←neg_mul,},
+  norm_cast,
+  repeat {rw ← mul_assoc,},
+  rw [mul_assoc _ v x, mul_assoc _ v x,mul_comm _ (v*x),mul_comm _ (v*x),
+  mul_div_assoc,mul_assoc _ (1/δ) δ,one_div_mul_cancel, mul_one],
+  positivity,
+end
+
+
+lemma tendsto_interval_integral {δ x : ℝ} {f : schwartz_map ℝ ℂ} (h : 0 < δ) : tendsto (λn : ℝ,∫ (v : ℝ) in -n..n, (λw : ℝ,  cexp (↑((-2) * real.pi * 1/δ*(w) * x) * I) • f.to_fun (w)) (δ*v)) at_top (nhds(∫ (v : ℝ), (λw : ℝ,  cexp (↑((-2) * real.pi * 1/δ*(w) * x) * I) • f.to_fun (w)) (δ*v))) :=
+begin 
+  simp_rw rewrite_imaginary_part,
+  have h₁: tendsto (λ (n : ℝ), -n) at_top at_bot, by {simp only [tendsto_neg_at_bot_iff], exact rfl.ge,},
+  have h₂: tendsto (λ (n : ℝ), n) at_top at_top, by {exact rfl.ge,},
+  convert measure_theory.interval_integral_tendsto_integral (integrable_exp_mul_schwartz2 (x) (schwartz_mul f δ)) h₁ h₂,
+  {ext1 n,  congr,refine cexp_delta_cancel h,},
+  {refine cexp_delta_cancel h,},
+end
+
+
+lemma cexp_bound' (h : ℝ) {a : ℝ} : 
+∃ (C : ℝ), ∀ (x : ℝ), ‖cexp (↑((a) * x * h) * I)‖ ≤ C :=
+begin
+  use 1,  intro x,  rw [complex.norm_exp_of_real_mul_I _],
+end
+
+
+lemma continuous_cexp' {x a : ℝ} : continuous (λ (v : ℝ), cexp ((a : ℂ) * ↑v * ↑x * I)) :=
+begin
+  refine continuous.cexp  _,
+  refine continuous.mul _ continuous_const,
+  refine continuous.mul _ continuous_const,
+  refine continuous.mul continuous_const _,
+  refine continuous.comp of_real_clm.continuous continuous_id,
+end
+
+
+lemma integrable_cexp_mul_schwartz (x : ℝ) (f : schwartz_map ℝ ℂ){C : ℝ}:
+measure_theory.integrable (λ (v : ℝ), (λ (w : ℝ), cexp (((C) * ↑v * ↑w * I)) * f.to_fun v) x) measure_theory.measure_space.volume:=
+begin
+  convert integrable_mul_schwartz_map _ (λ (v : ℝ), cexp ((C * ↑v * ↑x * I))) (integrable_schwartz_map (f)) _ _,
+  have h₂:=cexp_bound' x,
+  obtain ⟨C,h₂⟩:=h₂,
+  use C,
+  intro x, specialize h₂ x,
+  convert h₂,
+  repeat {rw ←neg_mul,},
+  norm_cast,
+  convert continuous_cexp',
+end
+
+
+lemma cexp_const_mul_smul {δ x : ℝ} {f : schwartz_map ℝ ℂ}: 
+(λ (v : ℝ), cexp (-(2 * ↑real.pi * ↑(x / δ) * ↑v * I)) • f.to_fun v) = λ (v : ℝ), cexp (↑(((-2:ℤ) : ℝ) * real.pi * (1 / δ)) * ↑v * ↑x * I) * f.to_fun v :=
+begin
+  ext1 v,
+  rw smul_eq_mul,
+  repeat {rw ← neg_mul,},
+  rw div_eq_mul_one_div,
+  nth_rewrite_rhs 0 mul_assoc, 
+  nth_rewrite_rhs 0 mul_assoc, 
+  rw [← mul_assoc (v : ℂ) (x : ℂ) _, mul_comm (v : ℂ) (x : ℂ)],
+  repeat {rw ← mul_assoc,},
+  rw mul_comm x _,
+  norm_cast,
+  repeat {rw ← mul_assoc,},
+end
+
+
+lemma tendsto_const_mul_fourier_transform{δ x : ℝ} {f : schwartz_map ℝ ℂ} (h : 0 < δ) : 
+tendsto (λ (n : ℝ), (1 / (δ: ℂ)) * ∫ (v : ℝ) in (δ * -n)..(δ * n), (λ (w : ℝ), cexp (↑((-(2: ℝ)) * real.pi * 1 / δ * w * x) * I) • f.to_fun w) (v)) at_top (nhds (1 / ↑δ * ∫ (v : ℝ), cexp (↑((-(2: ℝ)) * real.pi * v * (x / δ)) * I) • f.to_fun v)) :=
+begin
+  simp_rw rewrite_imaginary_part,
+  refine filter.tendsto.const_mul _ _,
+  have h₁: tendsto (λ (n : ℝ), δ*(-n)) at_top at_bot, by {simp only [mul_neg,tendsto_neg_at_bot_iff],refine filter.tendsto.const_mul_at_top h _, exact rfl.ge,},
+  have h₂: tendsto (λ (n : ℝ), δ*(n)) at_top at_top, by {refine filter.tendsto.const_mul_at_top h _, exact rfl.ge,},
+  have h₃: 0<1/δ, positivity,
+  have h₄:= measure_theory.interval_integral_tendsto_integral (integrable_cexp_mul_schwartz (x) f) h₁ h₂,
+  dsimp at h₄,
+  convert h₄,
+  {ext1 n, congr, ext1 v,
+  rw ← smul_eq_mul,
+  repeat {rw ← neg_mul,},
+  congr,
+  rw mul_div_assoc,
+  norm_cast,},
+  {refine cexp_const_mul_smul,},
+end
+
+
+lemma proposition_1_2_iii {x δ : ℝ} (f : schwartz_map ℝ ℂ) (h : 0 < δ) : 
+real.fourier_integral (λ (y : ℝ), f.to_fun (δ*y)) x = (1/δ) * real.fourier_integral f.to_fun (x/δ) :=
+begin
+  rw fourier_integral_eq_integral_exp_smul,
+  rw fourier_integral_eq_integral_exp_smul,
+  have h₁: ∫ (v : ℝ), cexp (↑((-2) * real.pi * v * x) * I) • f.to_fun (δ * v) = ∫ (v : ℝ), (λw : ℝ,  cexp (↑((-2) * real.pi * 1/δ*(w) * x) * I) • f.to_fun (w)) (δ*v), 
+    congr, ext1 v, dsimp only, rw mul_div_assoc,rw mul_assoc _ (1 / δ) _, congr, ring_nf, rw [mul_assoc, ←one_div, mul_comm δ _,one_div_mul_cancel,mul_one],positivity,
+  rw h₁,
+  refine tendsto_nhds_unique (tendsto_interval_integral h) _,
+  convert tendsto_const_mul_fourier_transform h,
+  ext1 n,
+  rw interval_integral.integral_comp_mul_left,
+  rw ← smul_eq_mul,
+  rw one_div,
+  norm_cast,
+  positivity,
+end
+
+
+-- # We now formalize corollary 1.5
+lemma cexp_sqrt_delta_eq_cexp_abs {x δ : ℝ} (h : 0 < δ) : 
+cexp (-(real.pi: ℂ) * ↑(x / δ ^ ((1 / 2) : ℝ)) ^ 2) = cexp (-(↑real.pi / ↑δ) * ↑|x| ^ 2) :=
+begin
+  norm_cast,
+  rw div_pow,
+  rw div_eq_mul_one_div,
+  nth_rewrite_rhs 0 div_eq_mul_one_div,
+  rw ← neg_mul,
+  repeat {rw ← mul_assoc,},
+  have h₁: (δ ^ ((1 / 2) : ℝ)) ^ 2 = δ, by {rw [← real.sqrt_eq_rpow, real.sq_sqrt], positivity,},
+  rw [h₁, mul_assoc _ (x^2) _, mul_comm (x^2) _, ← mul_assoc _ _ (x^2), ← abs_sq],
+  congr,
+  simp only [_root_.abs_pow],
+end
+
+
+lemma fourier_integral_norm_sqrt_delta {x δ : ℝ} (h : 0 < δ) : 
+real.fourier_integral  (λ x : ℝ, complex.exp (-((real.pi*δ) : ℂ)* ‖x‖^2)) x = real.fourier_integral  (λ x : ℝ, (λ y : ℝ,complex.exp (-((real.pi) : ℂ)* ‖y‖^2)) ((δ^((1/2) : ℝ))*x)) x :=
+begin
+  congr,
+  dsimp,
+  norm_cast,
+  ext1 x,
+  rw [abs_mul, mul_pow, ←neg_mul],
+  repeat {rw ← mul_assoc,},
+  congr, 
+  simp only [_root_.abs_pow],
+  rw [← real.sqrt_eq_rpow, ← norm_eq_abs, ← norm_pow, real.sq_sqrt, norm_eq_abs],
+  symmetry,
+  rw abs_eq_self,
+  positivity,
+  positivity,
+end
+
+
+lemma gaussian_pi_eq_gaussian_complex_pi {x δ : ℝ} (h : 0 < δ) : 
+𝓕 gaussian_pi.to_fun (x / δ ^ ((1 / 2) : ℝ)) = 𝓕 gaussian_complex_pi.to_fun (x / δ ^ ((1 / 2) : ℝ)) :=
+begin
+  rw fourier_integral_eq_integral_exp_smul,
+  rw fourier_integral_eq_integral_exp_smul,
+  congr,
+  ext1 v,
+  have h₁: gaussian_complex_pi.to_fun = λ x : ℝ, complex.exp (-real.pi * x ^ 2), refl,
+  have h₂: gaussian_pi.to_fun = λ x : ℝ, complex.exp (-real.pi * ‖x‖ ^ 2), refl,
+  rw [h₁,h₂],
+  dsimp,
+  norm_cast,
+  have : (v) ^ 2 = |v| ^ 2, simp only [pow_bit0_abs],
+  rw this,
+end
+
+
+lemma good_kernel_fourier_transform(x : ℝ) {δ : ℝ} (hδ : 0<δ) : 
+real.fourier_integral  (λ x : ℝ, complex.exp (-((real.pi*δ) : ℂ)* ‖x‖^2)) x  = (λ x : ℝ, (sqrt (1 / δ) : ℂ)  * complex.exp ((-((real.pi/δ) : ℂ)* ‖x‖^2))) x :=
+begin
+  have h₁: 0< ((real.pi*δ) : ℂ).re, by {norm_cast,rw zero_lt_mul_right hδ,exact pi_pos,},
+  have h₃: real.fourier_integral  (λ x : ℝ, complex.exp (-((real.pi*δ) : ℂ)* ‖x‖^2)) x = real.fourier_integral  (λ x : ℝ, (λ y : ℝ,complex.exp (-((real.pi) : ℂ)* ‖y‖^2)) ((δ^((1/2) : ℝ))*x)) x, by {refine fourier_integral_norm_sqrt_delta hδ,},
+  have h₄: 𝓕 (λ (x : ℝ), (λ (y : ℝ), cexp (-↑real.pi * ↑‖y‖ ^ 2)) (δ ^ ((1 / 2) : ℝ) * x)) x = 𝓕 (λ (x : ℝ), (gaussian_pi.to_fun) (δ ^ ((1 / 2) : ℝ) * x)) x, by {congr,},
+  have h₅:= proposition_1_2_iii (gaussian_pi) _,
+  rw [h₃,h₄,h₅],
+  congr,
+  norm_cast,
+  rw [← real.sqrt_eq_rpow, sqrt_div, sqrt_one],
+  refine zero_le_one,
+  have h₆:= fourier_transform_eq_gaussian2 (x / δ ^ ((1 / 2) : ℝ)),
+  have h₇: gaussian_complex_pi.to_fun = λ x : ℝ, complex.exp (-real.pi * x ^ 2), refl,
+  rw [gaussian_pi_eq_gaussian_complex_pi hδ,h₆,h₇],
+  dsimp, rw cexp_sqrt_delta_eq_cexp_abs hδ, positivity,
+end
+
+
+-- # We now prove property 1 of the good kernel
+theorem complex_coe_ne_zero {δ : ℝ} (hδ : 0<δ) : (δ: ℂ) ≠ 0:=
+begin
+  norm_cast,
+  exact ne_of_gt hδ,
+end
+
+
+theorem integral_good_kernel_eq_one {δ : ℝ} (hδ : 0<δ) : 
+∫ x : ℝ,  (sqrt (1 / δ):ℂ)*cexp (- (real.pi/δ)* x^2) = 1 :=
+begin
+  have hπδ : 0< ((real.pi/δ) : ℂ).re, by {norm_cast, rw [lt_div_iff hδ, zero_mul], exact pi_pos,},
+  have h :=integral_gaussian_complex hπδ,
+  simp_rw [mul_comm (sqrt(_):ℂ) _, ← smul_eq_mul],
+  rw integral_smul_const,
+  simp_rw smul_eq_mul,
+  rw [h,div_div_eq_mul_div , mul_div_right_comm, div_self _, one_mul], 
+  convert div_self _,
+  rw sqrt_eq_rpow,
+  rw ← one_div,
+  rw real.div_rpow zero_le_one (le_of_lt hδ),
+  rw real.one_rpow,
+  norm_cast,
+  sorry, -- type conversion issue
+  sorry, --refine complex_coe_ne_zero hδ,
+  refine complex_coe_ne_zero pi_pos,
+end
+
+
+-- # We were unable to fully formalize that ∫ (x : ℝ), 𝓕 g.to_fun x * ((λ x : ℝ , complex.exp (-real.pi *δ* ‖x‖^2)) x) →  g.to_fun 0 as δ→0
 lemma integrable_fun1 (g : schwartz_map ℝ ℂ) {x δ : ℝ} (hδ : 0 < δ) : 
 measure_theory.integrable (λ (a : ℝ), g.to_fun (x - a) * (1 / ↑δ ^ (1 / 2) * cexp (-(↑real.pi / ↑δ) * ↑‖a‖ ^ 2))) measure_theory.measure_space.volume:=
 begin
@@ -2741,7 +2745,6 @@ begin
 end
 
 
-
 lemma integral_le_3_set_integrals (g : schwartz_map ℝ ℂ) {x δ : ℝ} (hδ : 0 < δ) : 
 ∀ μ : ℝ, 0< μ →  ∫ (t : ℝ), 1 / ↑δ ^ (1 / 2) * cexp (-(↑real.pi / ↑δ) * ↑‖t‖ ^ 2) * (g.to_fun (x - t) - g.to_fun x) = 
 (∫ (x_1 : ℝ) in Iio (-μ), 1 / ↑δ ^ (1 / 2) * cexp (-(↑real.pi / ↑δ) * ↑‖x_1‖ ^ 2) * (g.to_fun (x - x_1) - g.to_fun x)) + (∫ (x_1 : ℝ) in Icc (-μ) μ, 1 / ↑δ ^ (1 / 2) * cexp (-(↑real.pi / ↑δ) * ↑‖x_1‖ ^ 2) * (g.to_fun (x - x_1) - g.to_fun x)) + ∫ (x_1 : ℝ) in Ioi μ, 1 / ↑δ ^ (1 / 2) * cexp (-(↑real.pi / ↑δ) * ↑‖x_1‖ ^ 2) * (g.to_fun (x - x_1) - g.to_fun x) :=
@@ -2777,15 +2780,6 @@ begin
 end
 
 
--- # part of formalizing corollary 1.7. Uncompleted
-lemma tendsto_Iio_zero (g : schwartz_map ℝ ℂ) (δ : ℝ) : 
-∀ x : ℝ,tendsto  (λ μ : ℝ, ∫ (y : ℝ) in Iio (-μ), 1 / ↑δ ^ (1 / 2) * cexp (-(↑real.pi / ↑δ) * ↑‖y‖ ^ 2) * (g.to_fun (x - y) - g.to_fun x)) (nhds_within 0 (set.Ioi 0)) (nhds (∫ (y : ℝ) in Iio (-0), 1 / ↑δ ^ (1 / 2) * cexp (-(↑real.pi / ↑δ) * ↑‖y‖ ^ 2) * (g.to_fun (x - y) - g.to_fun x))) :=
-begin
-  intro x,
-  sorry,
-end
-
-
 lemma integral_good_kernel (δ : ℝ) (hδ : 0<δ) : 
 ∫ (y : ℝ) in Ioi 0, 1 / ↑δ ^ (1 / 2) * cexp (-(↑real.pi / ↑δ) * ↑‖y‖ ^ 2)  = (1 / ↑δ ^ (1 / 2))* ((↑real.pi / (↑real.pi / ↑δ)) ^ ((1: ℂ) / 2) / 2) :=
 begin
@@ -2803,49 +2797,34 @@ begin
 end
 
 
+-- # part of formalizing corollary 1.7. Uncompleted
 lemma delta_mu_are_different1 (g : schwartz_map ℝ ℂ) (δ C : ℝ) : 
 ∀ x : ℝ,tendsto (λ (μ  : ℝ), (∫ (t : ℝ) in Iio (-μ), 1 / ↑δ ^ (1 / 2) * cexp (-(↑real.pi / ↑δ) * ↑‖t‖ ^ 2) * (g.to_fun (x - t) - g.to_fun x)) + ∫ (t : ℝ) in Ioi μ , 1 / ↑δ ^ (1 / 2) * cexp (-(↑real.pi / ↑δ) * ↑‖t‖ ^ 2) * (g.to_fun (x - t) - g.to_fun x)) (nhds_within 0 (Ioi 0)) (nhds ((1 / ↑δ ^ (1 / 2))* ((↑real.pi / (↑real.pi / ↑δ)) ^ ((1: ℂ) / 2) / 2) + (- ((1 / ↑δ ^ (1 / 2))* ((↑real.pi / (↑real.pi / ↑δ)) ^ ((1: ℂ) / 2) / 2))))) :=
 begin
-  intro x,
-  rw metric.tendsto_nhds_within_nhds,
-  intros ε hε,
-  have h₁:=tendsto_Iio_zero g δ x,
-  rw metric.tendsto_nhds_within_nhds at h₁,
-  specialize h₁ (ε/2), specialize h₁ _, sorry,
-  obtain ⟨e,h₁⟩:=h₁, obtain ⟨he,h₁⟩:=h₁,
-  use e, use he,
-  intros μ hμ, specialize h₁ hμ,
-  intro h, specialize h₁ h,
-  rw dist_eq_norm, rw dist_eq_norm at h₁,
-  have h₂: ((1 / (δ: ℂ) ^ (1 / 2))* ((↑real.pi / (↑real.pi / ↑δ)) ^ ((1: ℂ) / 2) / 2) + -((1 / ↑δ ^ (1 / 2))* ((↑real.pi / (↑real.pi / ↑δ)) ^ ((1: ℂ) / 2) / 2))) =  ((∫ (y : ℝ) in Iio (-0), 1 / ↑δ ^ (1 / 2) * cexp (-(↑real.pi / ↑δ) * ↑‖y‖ ^ 2) * (g.to_fun (x - y) - g.to_fun x))+(∫ (y : ℝ) in Ioi (0), 1 / ↑δ ^ (1 / 2) * cexp (-(↑real.pi / ↑δ) * ↑‖y‖ ^ 2) * (g.to_fun (x - y) - g.to_fun x))) - (((∫ (y : ℝ) in Iio (-0), 1 / ↑δ ^ (1 / 2) * cexp (-(↑real.pi / ↑δ) * ↑‖y‖ ^ 2) * (g.to_fun (x - y) - g.to_fun x))+(∫ (y : ℝ) in Ioi (0), 1 / ↑δ ^ (1 / 2) * cexp (-(↑real.pi / ↑δ) * ↑‖y‖ ^ 2) * (g.to_fun (x - y) - g.to_fun x))))+ ((1 / (δ: ℂ) ^ (1 / 2))* ((↑real.pi / (↑real.pi / ↑δ)) ^ ((1: ℂ) / 2) / 2) + -((1 / ↑δ ^ (1 / 2))* ((↑real.pi / (↑real.pi / ↑δ)) ^ ((1: ℂ) / 2) / 2))), sorry,
-  rw h₂,
-  rw sub_add_eq_sub_sub,
-  rw ← sub_add,
-  rw add_sub_assoc,
-  refine lt_of_le_of_lt (norm_add_le _ _) _,
-  have h₃: ε = ε/2 + ε/2, ring_nf,
-  rw h₃,
-  refine add_lt_add _ _,
-  convert h₁,
-  rw ← integral_good_kernel,
-  have h₄: 0 < ((real.pi: ℂ) / ↑δ).re, by {norm_cast, rw zero_lt_mul_right hδ, exact pi_pos,}
-  have h₅:= integral_gaussian_complex_Ioi h₄,
-  ext1 y,
-  dedup,
+  sorry,
 end
 
--- # part of formalizing corollary 1.7. Uncompleted
+
 lemma delta_mu_are_different2 (g : schwartz_map ℝ ℂ) (δ C : ℝ) : 
 ∀ x : ℝ,tendsto (λ (μ  : ℝ), (∫ (t : ℝ) in Iio (-μ), 1 / ↑δ ^ (1 / 2) * cexp (-(↑real.pi / ↑δ) * ↑‖t‖ ^ 2) * (g.to_fun (x - t) - g.to_fun x)) + ∫ (t : ℝ) in Ioi μ , 1 / ↑δ ^ (1 / 2) * cexp (-(↑real.pi / ↑δ) * ↑‖t‖ ^ 2) * (g.to_fun (x - t) - g.to_fun x)) (nhds_within 0 (Ioi 0)) (nhds (C + (-C))) :=
 begin
   sorry,
 end
 
+
 lemma delta_is_mixed (g : schwartz_map ℝ ℂ) (C x : ℝ) : 
 tendsto (λ (δ : ℝ), (∫ (y : ℝ) in Iio (-δ), 1 / ↑δ ^ (1 / 2) * cexp (-(↑real.pi / ↑δ) * ↑‖y‖ ^ 2) * (g.to_fun (x -y) - g.to_fun x)) + ∫ (y : ℝ) in Ioi δ, 1 / ↑δ ^ (1 / 2) * cexp (-(↑real.pi / ↑δ) * ↑‖y‖ ^ 2) * (g.to_fun (x - y) - g.to_fun x)) (nhds_within 0 (Ioi 0)) (nhds (C + (-C))) :=
 begin
   sorry,
 end
+
+
+lemma Icc_tendsto_zero (g: schwartz_map ℝ  ℂ ): 
+∀ x:ℝ,tendsto  (λ μ:ℝ, ∫ (y : ℝ) in Icc (-μ) (μ), 1 / ↑μ ^ (1 / 2) * cexp (-(↑real.pi / ↑μ) * ↑‖y‖ ^ 2) * (g.to_fun (x - y) - g.to_fun x)) (nhds_within 0 (set.Ioi 0)) (nhds (0)):=
+begin
+  sorry,
+end
+
 
 lemma fourier_convolution_good_kernel_conversion_3part  (g : schwartz_map ℝ ℂ) :
 ∀ x : ℝ,tendsto (λ (δ : ℝ), (∫ (x_1 : ℝ) in Icc (-δ) δ, 1 / ↑δ ^ (1 / 2) * cexp (-(↑real.pi / ↑δ) * ↑‖x_1‖ ^ 2) * (g.to_fun (x - x_1) - g.to_fun x)) + (∫ (x_1 : ℝ) in Iio (-δ), 1 / ↑δ ^ (1 / 2) * cexp (-(↑real.pi / ↑δ) * ↑‖x_1‖ ^ 2) * (g.to_fun (x - x_1) - g.to_fun x)) +  (∫ (x_1 : ℝ) in Ioi δ, 1 / ↑δ ^ (1 / 2) * cexp (-(↑real.pi / ↑δ) * ↑‖x_1‖ ^ 2) * (g.to_fun (x - x_1) - g.to_fun x))) (nhds_within 0 (Ioi 0)) (nhds 0) := 
@@ -2855,13 +2834,13 @@ begin
   rw h₁,
   simp_rw add_assoc,
   refine filter.tendsto.add _ _,
-  refine Icc_tendsto_zero1 g x,
+  refine Icc_tendsto_zero g x,
   convert delta_is_mixed _ _ _,
   norm_cast,
 end
 
 
-lemma fourier_convolution_good_kernel_conversion0  (g : schwartz_map ℝ ℂ) :
+lemma fourier_convolution_good_kernel_conversion_first  (g : schwartz_map ℝ ℂ) :
 ∀ x : ℝ,tendsto (λ δ : ℝ , (∫ (t: ℝ), g.to_fun (x-t) * (λ x : ℝ ,1 / (δ: ℂ) ^ (1 / 2) *complex.exp (- (real.pi/δ)*‖x‖^2))  t) - g.to_fun x) (nhds_within 0 (set.Ioi 0)) (nhds (0)) := 
 begin 
   intro x,
@@ -2889,7 +2868,7 @@ lemma tendsto_sub  (g : schwartz_map ℝ ℂ) :
 ∀ x : ℝ,tendsto (λ δ : ℝ , ∫ (t: ℝ), g.to_fun (x-t) * (λ x : ℝ ,1 / (δ: ℂ) ^ (1 / 2) *complex.exp (- (real.pi/δ)*‖x‖^2))  t) (nhds_within 0 (set.Ioi 0)) (nhds (g.to_fun x)) := 
 begin 
   intro x,
-  have h₁:= fourier_convolution_good_kernel_conversion0 g x,
+  have h₁:= fourier_convolution_good_kernel_conversion_first g x,
   rw metric.tendsto_nhds_within_nhds,
   rw metric.tendsto_nhds_within_nhds at h₁,
   intros ε hε,
@@ -2913,6 +2892,7 @@ begin
   refine measure_theory.integral_neg_eq_self _ _,
 end
 
+
 lemma integral_negative_function (g : schwartz_map ℝ ℂ) {δ : ℝ}: 
  ∫ (t : ℝ), g.to_fun (0 - t) * (λ (x : ℝ), 1 / ↑δ ^ (1 / 2) * cexp (-(↑real.pi / ↑δ) * ↑‖x‖ ^ 2)) t = ∫ (t : ℝ), g.to_fun (t) * (λ (x : ℝ), 1 / ↑δ ^ (1 / 2) * cexp (-(↑real.pi / ↑δ) * ↑‖x‖ ^ 2)) t:=
 begin
@@ -2925,7 +2905,7 @@ begin
 end
 
 
-lemma fourier_convolution_good_kernel_conversion2 (g : schwartz_map ℝ ℂ) :
+lemma fourier_convolution_good_kernel_conversion_second (g : schwartz_map ℝ ℂ) :
 tendsto (λ δ : ℝ ,  ∫ (x : ℝ), g.to_fun x * (𝓕 (λ x : ℝ , complex.exp (-real.pi*δ* ‖x‖^2)) x)) (nhds_within 0 (set.Ioi 0)) (nhds (g.to_fun 0)) := 
 begin
   have h₁:= tendsto_sub g 0,
@@ -2960,7 +2940,7 @@ end
 lemma fourier_convolution_good_kernel_conversion (g : schwartz_map ℝ ℂ) :
 tendsto (λ δ : ℝ ,  ∫ (x : ℝ), 𝓕 g.to_fun x * ((λ x : ℝ , complex.exp (-real.pi* δ* ‖x‖^2)) x)) (nhds_within 0 (set.Ioi 0)) (nhds (g.to_fun 0)) := 
 begin
-  have h₁:= fourier_convolution_good_kernel_conversion2 g,
+  have h₁:= fourier_convolution_good_kernel_conversion_second g,
   rw metric.tendsto_nhds_within_nhds,
   rw metric.tendsto_nhds_within_nhds at h₁,
   intros ε hε,  
@@ -2998,4 +2978,3 @@ begin
   rw [← h₃,h₄],
   refine tendsto_nhds_unique (fourier_convolution_good_kernel_conversion g) (converges_proper g),
 end
-
